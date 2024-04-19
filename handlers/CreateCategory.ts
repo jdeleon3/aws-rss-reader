@@ -8,9 +8,9 @@ export const main: APIGatewayProxyHandlerV2 = async(event:APIGatewayProxyEventV2
             statusCode:400
         }
     }
-    const category:Category = JSON.parse(event.body) as Category;
+    const request:any = JSON.parse(event.body);
     try{
-        const response = await createCategory(category);
+        const response = await createCategory(new Category(request.title,request.Description));
         return {
             body:JSON.stringify(response),
             statusCode:200
