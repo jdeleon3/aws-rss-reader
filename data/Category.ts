@@ -44,10 +44,10 @@ export class Subcategory extends Category{
         super(title, description)
         this.ParentCategory = parentCategory
     }   
-    get PK(): string {
-        return `CATEGORY#${this.ParentCategory}`
+    override get PK(): string {
+        return `SC#${this.ParentCategory}`
     }
-    get SK(): string {
+    override get SK(): string {        
         return `SUBCATEGORY#${this.title}`
     }
 }
