@@ -24,10 +24,10 @@ export class Category extends BaseItem{
     }
 
     get PK(): string {
-        return `CATEGORY#${this.title}`
+        return 'CATEGORY#' + this.title;
     }
     get SK(): string {
-        return `CATEGORY#${this.title}`
+        return 'CATEGORY#' + this.title;
     }
     ToItem(): Record<string, unknown> {
         return {
