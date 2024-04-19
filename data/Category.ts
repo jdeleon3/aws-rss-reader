@@ -71,9 +71,9 @@ export const createCategory = async (category: Category): Promise<Category> => {
 
 export const getCategory = async(id: string): Promise<Category> =>{
     try{
-        conosle.log(`Getting category with id: ${id}`);
+        console.log(`Getting category with id: ${id}`);
         let response = await getItem(process.env.TABLE_NAME!, `CATEGORY#${id}`, `CATEGORY#${id}`);
-        conosle.log(`Response: ${JSON.stringify(response)}`);
+        console.log(`Response: ${JSON.stringify(response)}`);
         return Category.FromItem(response);
     }
     catch(err){
