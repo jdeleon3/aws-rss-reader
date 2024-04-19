@@ -44,16 +44,16 @@ export class Category extends BaseItem{
 }
 
 export class Subcategory extends Category{
-    ParentCategory: string
+    ParentCategoryId: string
     constructor(title: string, description: string, parentCategoryId: string){
         super(title, description)
-        this.ParentCategory = parentCategoryId
+        this.ParentCategoryId = parentCategoryId
     }   
     override get PK(): string {
-        return `SC#${this.ParentCategory}`
+        return `SC#${this.ParentCategoryId}`
     }
     override get SK(): string {        
-        return `SUBCATEGORY#${this.title}`
+        return `SUBCATEGORY#${this.id}`
     }
 }
 
