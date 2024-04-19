@@ -6,8 +6,8 @@ export abstract class BaseItem {
 
     public Keys(){
         return {
-            PK: {S: this.PK},
-            SK: {S: this.SK}
+            PK: this.PK,
+            SK: this.SK
         }
     }
 
