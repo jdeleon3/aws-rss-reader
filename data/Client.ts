@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
 
 let client: DynamoDBClient// = null
 
@@ -9,6 +9,22 @@ export async function putItem(tableName:string, item:Record<string,unknown>|unde
         TableName: tableName,
         Item: item,
         ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(FK)'
+    });
+    const docClient = DynamoDBDocumentClient.from(client)
+
+    const response = await docClient.send(command);
+    console.log(response);
+    return response;
+    }
+
+export async function getItem(tableName: string, pk: string, sk: string): Promise<any> {
+    getClient();
+    const command = new GetCommand({
+        TableName: tableName,
+        Key: {
+            PK: pk,
+            SK: sk
+        }
     });
     const docClient = DynamoDBDocumentClient.from(client)
 

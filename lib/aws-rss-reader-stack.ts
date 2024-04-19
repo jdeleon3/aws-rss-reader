@@ -34,8 +34,15 @@ export class AwsRssReaderStack extends Stack {
       runtime: Runtime.NODEJS_20_X
     });
 
+    //Category functions
     const createCategoryFunction = new NodejsFunction(this, 'createCategoryFunction', {
       entry: 'handlers/CreateCategory.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X
+    });
+    
+    const getCategoryFunction = new NodejsFunction(this, 'getCategoryFunction', {
+      entry: 'handlers/GetCategory.ts',
       handler: 'main',
       runtime: Runtime.NODEJS_20_X
     });
@@ -56,6 +63,12 @@ export class AwsRssReaderStack extends Stack {
       integration: new HttpLambdaIntegration('CreateCategoryIntegration', createCategoryFunction)
     });
 
+    awsRssAPI.addRoutes({
+      path: '/getCategory/{id}',
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration('GetCategoryIntegration', getCategoryFunction),
+    });
+
     // Define and add permissions to the Stack Objects
     const lambdaPolicy = new PolicyStatement({
       resources: [table.tableArn],
@@ -68,6 +81,7 @@ export class AwsRssReaderStack extends Stack {
                 ,'dynamodb:DeleteItem']
     });
     createCategoryFunction.addToRolePolicy(lambdaPolicy);
+    getCategoryFunction.addToRolePolicy(lambdaPolicy);
     // example resource
     // const queue = new sqs.Queue(this, 'AwsRssReaderQueue', {
     //   visibilityTimeout: cdk.Duration.seconds(300)
