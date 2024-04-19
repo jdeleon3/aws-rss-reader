@@ -19,12 +19,7 @@ it('Category Should generate Primary Key', async() =>{
     
 
     //Assert
-    if(typeof item.PK === 'object'){
-        expect(JSON.stringify(item.PK)).toBe('{"S":"CATEGORY#Test Category"}')
-    }
-    else{
-        fail('PK is not an object')
-    }
+        expect(JSON.stringify(item.PK)).toBe('"CATEGORY#Test Category"')
 })
 
 it('Category Should generate Sort Key', async() =>{
@@ -37,12 +32,7 @@ it('Category Should generate Sort Key', async() =>{
     
 
     //Assert
-    if(typeof item.SK === 'object'){
-        expect(JSON.stringify(item.SK)).toBe('{"S":"CATEGORY#Test Category"}')
-    }
-    else{
-        fail('SK is not an object')
-    }
+        expect(JSON.stringify(item.SK)).toBe('"CATEGORY#Test Category"')
 })
 
 it('Subcategory Should generate Primary Key', async() =>{
@@ -55,12 +45,7 @@ it('Subcategory Should generate Primary Key', async() =>{
     
 
     //Assert
-    if(typeof item.PK === 'object'){
-        expect(JSON.stringify(item.PK)).toBe('{"S":"SC#Test Category"}')
-    }
-    else{
-        fail('PK is not an object')
-    }
+        expect(JSON.stringify(item.PK)).toBe('"SC#Test Category"')
 })
 
 it('Subcategory Should generate Sort Key', async() =>{
@@ -73,10 +58,5 @@ it('Subcategory Should generate Sort Key', async() =>{
     
 
     //Assert
-    if(typeof item.SK === 'object'){
-        expect(JSON.stringify(item.SK)).toBe('{"S":"SUBCATEGORY#Jest Test"}')
-    }
-    else{
-        fail('SK is not an object')
-    }
+        expect(JSON.stringify(item.SK)).toBe('"SUBCATEGORY#Jest Test"')
 })
