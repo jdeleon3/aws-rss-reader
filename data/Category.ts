@@ -19,7 +19,7 @@ export class Category extends BaseItem{
 
     static FromItem(item?:DynamoDB.AttributeMap): Category {
         if(!item) throw new Error('Item is null');
-        return new Category(getValue(item.title.S), getValue(item.description.S),getValue(item.id.S));
+        return new Category(getValue(item.title), getValue(item.description),getValue(item.id));
     }
 
     static getValue(itemValue: string|undefined): string{
