@@ -17,10 +17,10 @@ export class Category extends BaseItem{
         this.description = description
     }
 
-    static FromItem(item?:DynamoDB.AttributeMap): Category {
+    static FromItem(item?:Record<string,any>): Category {
         if(!item) throw new Error('Item is null');
         console.log(JSON.stringify(item));
-        return new Category(getValue(item.title.S), getValue(item.description.S),getValue(item.id.S));
+        return new Category(getValue(item.title), getValue(item.description),getValue(item.id));
     }
 
     static getValue(itemValue: string|undefined): string{
@@ -74,7 +74,7 @@ export const getCategory = async(id: string): Promise<Category> =>{
         console.log(`Getting category with id: ${id}`);
         let response = await getItem(process.env.TABLE_NAME!, `CATEGORY#${id}`, `CATEGORY#${id}`);
         console.log(`Response: ${JSON.stringify(response)}`);
-        return Category.FromItem(response);
+        return Category.FromItem(response.Item);
     }
     catch(err){
         console.log(err)
