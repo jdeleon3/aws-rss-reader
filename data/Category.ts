@@ -27,7 +27,7 @@ export class Category extends BaseItem{
         return `CATEGORY#${this.title}`;
     }
     get SK(): string {
-        return `CATEGORY#'${this.title}`;
+        return `CATEGORY#${this.title}`;
     }
     ToItem(): Record<string, unknown> {
         return {
