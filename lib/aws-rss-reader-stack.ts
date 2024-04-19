@@ -46,10 +46,24 @@ export class AwsRssReaderStack extends Stack {
       handler: 'main',
       runtime: Runtime.NODEJS_20_X
     });
+    
+    const updateCategoryFunction = new NodejsFunction(this, 'updateCategoryFunction', {
+      entry: 'handlers/UpdateCategory.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X
+    });
+    
+    const deleteCategoryFunction = new NodejsFunction(this, 'deleteCategoryFunction', {
+      entry: 'handlers/DeleteCategory.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X
+    });
 
     awsRssRegisterFunction.addEnvironment('TABLE_NAME', table.tableName);
     createCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
     getCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
+    updateCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
+    deleteCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
 
     const awsRssAPI = new HttpApi(this,'AwsRssAPI');
     awsRssAPI.addRoutes({
@@ -68,10 +82,22 @@ export class AwsRssReaderStack extends Stack {
       path: '/getCategory/{id}',
       methods: [HttpMethod.GET],
       integration: new HttpLambdaIntegration('GetCategoryIntegration', getCategoryFunction),
+    });    
+
+    awsRssAPI.addRoutes({
+      path: '/updateCategory/{id}',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('UpdateCategoryIntegration', updateCategoryFunction),
+    });    
+
+    awsRssAPI.addRoutes({
+      path: '/deleteCategory/{id}',
+      methods: [HttpMethod.DELETE],
+      integration: new HttpLambdaIntegration('DeleteCategoryIntegration', deleteCategoryFunction),
     });
 
     // Define and add permissions to the Stack Objects
-    const lambdaPolicy = new PolicyStatement({
+    const lambdaFullAccessPolicy = new PolicyStatement({
       resources: [table.tableArn],
       actions: ['dynamodb:PutItem'
                 ,'dynamodb:GetItem'
@@ -81,8 +107,19 @@ export class AwsRssReaderStack extends Stack {
                 ,'dynamodb:UpdateItem'
                 ,'dynamodb:DeleteItem']
     });
-    createCategoryFunction.addToRolePolicy(lambdaPolicy);
-    getCategoryFunction.addToRolePolicy(lambdaPolicy);
+
+    const lambdaReadAccessPolicy = new PolicyStatement({
+      resources: [table.tableArn],
+      actions: ['dynamodb:GetItem'
+                ,'dynamodb:BatchGetItem'
+                ,'dynamodb:ConditionCheckItem'
+                ,'dynamodb:Query']
+    });
+    createCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
+    getCategoryFunction.addToRolePolicy(lambdaReadAccessPolicy);
+    updateCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
+    deleteCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
+
     // example resource
     // const queue = new sqs.Queue(this, 'AwsRssReaderQueue', {
     //   visibilityTimeout: cdk.Duration.seconds(300)

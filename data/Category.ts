@@ -1,6 +1,6 @@
 import {DynamoDB} from 'aws-sdk';
 import {BaseItem} from './BaseItem'
-import {putItem, getItem} from './Client';
+import {putItem, getItem, updateItem, deleteItem} from './Client';
 import {getValue} from './Utils';
 import { ulid } from 'ulid';
 
@@ -69,12 +69,38 @@ export const createCategory = async (category: Category): Promise<Category> => {
     }
 }
 
+export const updateCategory = async (category: Category): Promise<Category> => {
+    try{
+        await updateItem(process.env.TABLE_NAME!, category.toItem());
+        return category;
+    }
+    catch(err){
+        console.log(err)
+        throw err;
+    }
+}
+
 export const getCategory = async(id: string): Promise<Category> =>{
     try{
         console.log(`Getting category with id: ${id}`);
         let response = await getItem(process.env.TABLE_NAME!, `CATEGORY#${id}`, `CATEGORY#${id}`);
         console.log(`Response: ${JSON.stringify(response)}`);
         return Category.FromItem(response.Item);
+    }
+    catch(err){
+        console.log(err)
+        throw err;
+    }
+}
+
+
+
+export const deleteCategory = async(id: string): Promise<string|undefined> =>{
+    try{
+        console.log(`Deleting category with id: ${id}`);
+        let response = await deleteItem(process.env.TABLE_NAME!, `CATEGORY#${id}`, `CATEGORY#${id}`);
+        console.log(`Response: ${JSON.stringify(response)}`);
+        return response.$metadata.httpStatusCode?.toString();
     }
     catch(err){
         console.log(err)
