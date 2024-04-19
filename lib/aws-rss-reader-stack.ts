@@ -49,6 +49,7 @@ export class AwsRssReaderStack extends Stack {
 
     awsRssRegisterFunction.addEnvironment('TABLE_NAME', table.tableName);
     createCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
+    getCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
 
     const awsRssAPI = new HttpApi(this,'AwsRssAPI');
     awsRssAPI.addRoutes({
