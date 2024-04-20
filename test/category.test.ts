@@ -1,6 +1,7 @@
 import {mockClient} from 'aws-sdk-client-mock'
 import {DynamoDBDocumentClient, GetCommand, PutCommand} from '@aws-sdk/lib-dynamodb'
-import {createCategory, Category, Subcategory} from '../data/Category'
+import {createCategory, Category} from '../data/Category'
+import {Subcategory} from '../data/Subcategory'
 import { ulid } from 'ulid';
 
 
