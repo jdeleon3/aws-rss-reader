@@ -96,7 +96,7 @@ export class AwsRssReaderStack extends Stack {
     
 
     awsRssAPI.addRoutes({
-      path: '/getAllCategories}',
+      path: '/getAllCategories',
       methods: [HttpMethod.GET],
       integration: new HttpLambdaIntegration('GetAllCategoriesIntegration', getAllCategoriesFunction),
     });
