@@ -139,7 +139,7 @@ export class AwsRssReaderStack extends Stack {
 
     // Define and add permissions to the Stack Objects
     const lambdaFullAccessPolicy = new PolicyStatement({
-      resources: [table.tableArn],
+      resources: [table.tableArn,`${table.tableArn}/index/*`],
       actions: ['dynamodb:PutItem'
                 ,'dynamodb:GetItem'
                 ,'dynamodb:BatchGetItem'
@@ -150,7 +150,7 @@ export class AwsRssReaderStack extends Stack {
     });
 
     const lambdaReadAccessPolicy = new PolicyStatement({
-      resources: [table.tableArn],
+      resources: [table.tableArn,`${table.tableArn}/index/*`],
       actions: ['dynamodb:GetItem'
                 ,'dynamodb:BatchGetItem'
                 ,'dynamodb:ConditionCheckItem'
