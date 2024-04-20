@@ -136,7 +136,7 @@ export class AwsRssReaderStack extends Stack {
     });    
 
     awsRssAPI.addRoutes({
-      path: '/getAllSubcategories',
+      path: '/getAllSubcategories/{parentCategoryId}',
       methods: [HttpMethod.POST],
       integration: new HttpLambdaIntegration('GetAllSubcategoriesIntegration', getAllSubcategoriesFunction)
     });    
