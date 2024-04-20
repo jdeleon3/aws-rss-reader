@@ -1,6 +1,5 @@
-import {DynamoDB} from 'aws-sdk';
 import {BaseItem} from './BaseItem'
-import {putItem, getItem, updateItem, deleteItem, transactWrite, TransactWriteInfo,TransactType,AvailableConditionExpressions} from './Client';
+import {getItem, transactWrite, TransactWriteInfo,TransactType,AvailableConditionExpressions} from './Client';
 import {getValue} from './Utils';
 import { ulid } from 'ulid';
 
@@ -27,12 +26,19 @@ export class Category extends BaseItem{
         if(!itemValue) return "";
         return itemValue;
     }
+    protected static formatIdToPK(id:string){
+        return `CATEGORY#${id}`;
+    }
+    protected static formatIdToSK(id:string){
+        return `CATEGORY#${id}`;
+    }
+    
 
     get PK(): string {
-        return `CATEGORY#${this.id}`;
+        return Category.formatIdToPK(this.id);
     }
     get SK(): string {
-        return `CATEGORY#${this.id}`;
+        return Category.formatIdToSK(this.id);
     }
     public TitleKeys(){
         return {
@@ -50,19 +56,6 @@ export class Category extends BaseItem{
     }
 }
 
-export class Subcategory extends Category{
-    ParentCategoryId: string
-    constructor(title: string, description: string, parentCategoryId: string){
-        super(title, description)
-        this.ParentCategoryId = parentCategoryId
-    }   
-    override get PK(): string {
-        return `SC#${this.ParentCategoryId}`
-    }
-    override get SK(): string {        
-        return `SUBCATEGORY#${this.id}`
-    }
-}
 
 export const createCategory = async (category: Category): Promise<Category> => {
     try{
@@ -71,40 +64,6 @@ export const createCategory = async (category: Category): Promise<Category> => {
         infos.push(new TransactWriteInfo(category.toItem(), TransactType.PUT,AvailableConditionExpressions.itemDoesNotExistCondition));
         await transactWrite(process.env.TABLE_NAME!, infos);
         return category;
-    }
-    catch(err){
-        console.log(err)
-        throw err;
-    }
-}
-
-export const createSubcategory = async(subcat: Subcategory): Promise<Subcategory> =>{
-    try{
-        await putItem(process.env.TABLE_NAME!, subcat.toItem());
-        return subcat;
-    }
-    catch(err){
-        console.log(err)
-        throw err;
-    }
-}
-
-export const updateSubcategory = async(subcat: Subcategory): Promise<Subcategory> =>{
-    try{
-        await updateItem(process.env.TABLE_NAME!, subcat.toItem());
-        return subcat;
-    }
-    catch(err){
-        console.log(err)
-        throw err;
-    }
-}
-
-
-export const deleteSubcategory = async(subcat: Subcategory): Promise<string|undefined> =>{
-    try{
-        let response = await deleteItem(process.env.TABLE_NAME!, subcat.PK, subcat.SK);
-        return response.$metadata.httpStatusCode?.toString();
     }
     catch(err){
         console.log(err)
