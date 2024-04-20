@@ -114,7 +114,10 @@ export const updateCategory = async (category: Category): Promise<Category> => {
         let infos = [];
         let current = await getCategory(category.id);
         if(current.title !== category.title){
-            infos.push(new TransactWriteInfo(current.toItem(), TransactType.DELETE, AvailableConditionExpressions.itemExistsCondition));
+            infos.push(new TransactWriteInfo(({
+                PK: `CATEGORYTITLE#${current.title}`,
+                SK: `CATEGORYTITLE#${current.title}`
+            }), TransactType.DELETE, AvailableConditionExpressions.itemExistsCondition));
             infos.push(new TransactWriteInfo(({
                 PK: `CATEGORYTITLE#${category.title}`,
                 SK: `CATEGORYTITLE#${category.title}`
