@@ -85,14 +85,14 @@ export class AwsRssReaderStack extends Stack {
     });    
 
     awsRssAPI.addRoutes({
-      path: '/updateCategory/{id}',
+      path: '/updateCategory',
       methods: [HttpMethod.POST],
       integration: new HttpLambdaIntegration('UpdateCategoryIntegration', updateCategoryFunction),
     });    
 
     awsRssAPI.addRoutes({
-      path: '/deleteCategory/{id}',
-      methods: [HttpMethod.GET],
+      path: '/deleteCategory',
+      methods: [HttpMethod.POST],
       integration: new HttpLambdaIntegration('DeleteCategoryIntegration', deleteCategoryFunction),
     });
 

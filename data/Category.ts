@@ -1,6 +1,6 @@
 import {DynamoDB} from 'aws-sdk';
 import {BaseItem} from './BaseItem'
-import {putItem, getItem, updateItem, deleteItem, transactWrite} from './Client';
+import {putItem, getItem, updateItem, deleteItem, transactWrite, transactDelete} from './Client';
 import {getValue} from './Utils';
 import { ulid } from 'ulid';
 
@@ -104,10 +104,11 @@ export const getCategory = async(id: string): Promise<Category> =>{
 
 
 
-export const deleteCategory = async(id: string): Promise<string|undefined> =>{
+export const deleteCategory = async(category: Category): Promise<string|undefined> =>{
     try{
-        console.log(`Deleting category with id: ${id}`);
-        let response = await deleteItem(process.env.TABLE_NAME!, `CATEGORY#${id}`, `CATEGORY#${id}`);
+        
+        console.log(`Deleting category: ${JSON.stringify(category)}`);
+        let response = await transactDelete(process.env.TABLE_NAME!, category.toPutTransactionItem());
         console.log(`Response: ${JSON.stringify(response)}`);
         return response.$metadata.httpStatusCode?.toString();
     }

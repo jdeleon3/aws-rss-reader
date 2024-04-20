@@ -2,15 +2,17 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { PutCommand, DynamoDBDocumentClient, GetCommand, GetCommandOutput, DeleteCommand,TransactWriteCommand, TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
 
 let client: DynamoDBClient// = null
+const itemDoesNotExistCondition: string = 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
+const itemExistsCondition: string = 'attribute_exists(PK) AND attribute_exists(SK)'
 
 export async function putItem(tableName:string, item:Record<string,unknown>|undefined): Promise<any> {
     getClient();
-    let condition:string = 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
+
     
     const command = new PutCommand({
         TableName: tableName,
         Item: item,
-        ConditionExpression: condition
+        ConditionExpression: itemDoesNotExistCondition
     });
     const docClient = DynamoDBDocumentClient.from(client)
 
@@ -22,12 +24,11 @@ export async function putItem(tableName:string, item:Record<string,unknown>|unde
     //Update by replacing entire object
     export async function updateItem(tableName:string, item:Record<string,unknown>|undefined): Promise<any> {
         getClient();
-        let condition:string = 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
-    
+
         const command = new PutCommand({
             TableName: tableName,
             Item: item,
-            ConditionExpression: 'attribute_exists(PK) AND attribute_exists(SK)'
+            ConditionExpression: itemExistsCondition
         });
         const docClient = DynamoDBDocumentClient.from(client)
     
@@ -45,7 +46,7 @@ export async function putItem(tableName:string, item:Record<string,unknown>|unde
                     PK: pk,
                     SK: sk
                 },
-                ConditionExpression: 'attribute_exists(PK) AND attribute_exists(SK)'
+                ConditionExpression: itemExistsCondition
             });
             const docClient = DynamoDBDocumentClient.from(client)
         
@@ -57,7 +58,11 @@ export async function putItem(tableName:string, item:Record<string,unknown>|unde
 export async function transactWrite(tableName: string, items: Record<string, unknown>[]|undefined): Promise<any> {
     getClient();
     items = items?.map((item: Record<string, unknown>) => ({
-        Put: item
+        Put: {
+            TableName: tableName,
+            Item: item,
+            ConditionExpression: itemDoesNotExistCondition
+        }
     }));
     console.log(items);
     let input: TransactWriteCommandInput = {
@@ -74,10 +79,37 @@ export async function transactWrite(tableName: string, items: Record<string, unk
     return response;
     }
 
+export async function transactUpdate(tableName: string, items: Record<string, unknown>[]|undefined): Promise<any> {
+    getClient();
+    items = items?.map((item: Record<string, unknown>) => ({
+        Put: {
+            TableName: tableName,
+            Item: item,
+            ConditionExpression: itemExistsCondition
+        }
+    }));
+    
+    const command = new TransactWriteCommand({
+        TransactItems: items
+    });
+    const docClient = DynamoDBDocumentClient.from(client)
+
+    const response = await docClient.send(command);
+    console.log(response);
+    return response;
+}
+
 export async function transactDelete(tableName: string, items: Record<string, unknown>[]|undefined): Promise<any> {
     getClient();
     items = items?.map((item: Record<string, unknown>) => ({
-        Delete: item
+        Delete: {
+            TableName: tableName,
+            Key: {
+                PK: item.pk,
+                SK: item.sk
+            },
+            ConditionExpression: itemExistsCondition
+        }
     }));
     const command = new TransactWriteCommand({
         TransactItems: items
