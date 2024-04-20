@@ -110,8 +110,7 @@ export async function queryItems(tableName: string, indexName:string, keyConditi
         TableName: tableName,
         IndexName: indexName,
         KeyConditionExpression: keyConditionExpression,
-        ExpressionAttributeValues: expressionValues,
-        ConsistentRead: true,
+        ExpressionAttributeValues: expressionValues
       });
     
       const response = await docClient.send(command);
