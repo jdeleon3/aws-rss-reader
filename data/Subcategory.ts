@@ -35,7 +35,10 @@ export class Subcategory extends Category{
 
     toItem(): Record<string, unknown> {
         return {
-            ...super.toItem(),
+            ...this.Keys(),
+            title: this.title,
+            description: this.description,
+            id: this.id,
             parentCategoryId: this.ParentCategoryId
         }
     }

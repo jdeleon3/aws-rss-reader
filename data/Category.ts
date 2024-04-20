@@ -1,5 +1,5 @@
 import {BaseItem} from './BaseItem'
-import {getItem, transactWrite, TransactWriteInfo,TransactType,AvailableConditionExpressions} from './Client';
+import {getItem, transactWrite, TransactWriteInfo,TransactType,AvailableConditionExpressions, queryItems} from './Client';
 import {getValue} from './Utils';
 import { ulid } from 'ulid';
 
@@ -46,9 +46,16 @@ export class Category extends BaseItem{
             SK: `CATEGORYTITLE#${this.title}`
         }
     }
+    public getGSI1Keys(){
+        return {
+            GSIPK: 'CATEGORY',
+            GSI1SK: this.title
+        }
+    }
     toItem(): Record<string, unknown> {
         return {
             ...this.Keys(),
+            ...this.getGSI1Keys(),
             title: this.title,
             description: this.description,
             id: this.id
@@ -83,6 +90,17 @@ export const updateCategory = async (category: Category): Promise<Category> => {
         infos.push(new TransactWriteInfo(category.toItem(), TransactType.PUT, AvailableConditionExpressions.itemExistsCondition));
         await transactWrite(process.env.TABLE_NAME!, infos);
         return category;
+    }
+    catch(err){
+        console.log(err)
+        throw err;
+    }
+}
+export const getAllCategories = async(): Promise<Category[]> =>{
+    try{
+        let response = await queryItems(process.env.TABLE_NAME!,"GSI1","GSI1PK = :val",{':val': 'CATEGORY'})
+        console.log(`Response: ${JSON.stringify(response)}`);
+        return response.Items?.map(Category.FromItem) || [];
     }
     catch(err){
         console.log(err)

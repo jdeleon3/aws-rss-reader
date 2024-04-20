@@ -34,7 +34,13 @@ export class AwsRssReaderStack extends Stack {
       runtime: Runtime.NODEJS_20_X
     });
 
-    //Category functions
+    //Category functions    
+    const getAllCategoriesFunction = new NodejsFunction(this, 'getCategoryFunction', {
+      entry: 'handlers/GetAllCategories.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X
+    });
+
     const createCategoryFunction = new NodejsFunction(this, 'createCategoryFunction', {
       entry: 'handlers/CreateCategory.ts',
       handler: 'main',
@@ -65,6 +71,12 @@ export class AwsRssReaderStack extends Stack {
       runtime: Runtime.NODEJS_20_X
     });
 
+    const getSubcategoryFunction = new NodejsFunction(this, 'getSubcategoryFunction', {
+      entry: 'handlers/GetSubcategory.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X
+    });
+
     awsRssRegisterFunction.addEnvironment('TABLE_NAME', table.tableName);
     createCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
     getCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
@@ -72,12 +84,20 @@ export class AwsRssReaderStack extends Stack {
     deleteCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
 
     createSubcategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
+    getSubcategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
 
     const awsRssAPI = new HttpApi(this,'AwsRssAPI');
     awsRssAPI.addRoutes({
       path: '/register',
       methods: [HttpMethod.POST],
       integration: new HttpLambdaIntegration('AwsRssRegisterUrlIntegration', awsRssRegisterFunction)
+    });
+    
+
+    awsRssAPI.addRoutes({
+      path: '/getAllCategories}',
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration('GetAllCategoriesIntegration', getAllCategoriesFunction),
     });
 
     awsRssAPI.addRoutes({
@@ -108,6 +128,12 @@ export class AwsRssReaderStack extends Stack {
       path: '/createSubcategory',
       methods: [HttpMethod.POST],
       integration: new HttpLambdaIntegration('CreateSubcategoryIntegration', createSubcategoryFunction)
+    });    
+
+    awsRssAPI.addRoutes({
+      path: '/getSubcategory',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('GetSubcategoryIntegration', getSubcategoryFunction)
     });
 
     // Define and add permissions to the Stack Objects
@@ -129,12 +155,15 @@ export class AwsRssReaderStack extends Stack {
                 ,'dynamodb:ConditionCheckItem'
                 ,'dynamodb:Query']
     });
+
+    getAllCategoriesFunction.addToRolePolicy(lambdaReadAccessPolicy);
     createCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
     getCategoryFunction.addToRolePolicy(lambdaReadAccessPolicy);
     updateCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
     deleteCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
 
     createSubcategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
+    getSubcategoryFunction.addToRolePolicy(lambdaReadAccessPolicy);
 
     // example resource
     // const queue = new sqs.Queue(this, 'AwsRssReaderQueue', {

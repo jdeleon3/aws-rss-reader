@@ -1,5 +1,5 @@
-import { DynamoDBClient,TransactWriteItem } from "@aws-sdk/client-dynamodb";
-import { PutCommand, DynamoDBDocumentClient, GetCommand, GetCommandOutput, DeleteCommand,TransactWriteCommand, TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { PutCommand, DynamoDBDocumentClient,QueryCommand, GetCommand, GetCommandOutput, DeleteCommand,TransactWriteCommand, TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
 
 let client: DynamoDBClient// = null
 
@@ -102,6 +102,23 @@ export async function getItem(tableName: string, pk: string, sk: string): Promis
     return response;
     }
 
+
+export async function queryItems(tableName: string, indexName:string, keyConditionExpression: string, expressionValues:Record<string,any>){
+    getClient();
+    const docClient = DynamoDBDocumentClient.from(client)
+    const command = new QueryCommand({
+        TableName: tableName,
+        IndexName: indexName,
+        KeyConditionExpression: keyConditionExpression,
+        ExpressionAttributeValues: expressionValues,
+        ConsistentRead: true,
+      });
+    
+      const response = await docClient.send(command);
+      console.log(response);
+      return response;
+}
+
 const getClient = () =>{
     if(!client){
         client = new DynamoDBClient({
@@ -120,6 +137,14 @@ export class TransactWriteInfo{
         this.conditionExpression = conditionExpression;
     }
 }
+
+export class QueryExpressionAttributes{
+    key: string
+    value: string
+    operator: string
+}
+
+
 
 export enum TransactType{
     PUT="Put",
