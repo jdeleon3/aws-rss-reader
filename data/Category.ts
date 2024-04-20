@@ -1,6 +1,6 @@
 import {DynamoDB} from 'aws-sdk';
 import {BaseItem} from './BaseItem'
-import {putItem, getItem, updateItem, deleteItem, transactWrite, transactDelete} from './Client';
+import {putItem, getItem, updateItem, deleteItem, transactWrite, TransactWriteInfo,TransactType,AvailableConditionExpressions} from './Client';
 import {getValue} from './Utils';
 import { ulid } from 'ulid';
 
@@ -42,15 +42,6 @@ export class Category extends BaseItem{
             id: this.id
         }
     }
-    toPutTransactionItem(): Record<string,unknown>[]{
-        return [            
-            {
-                PK: `CATEGORYTITLE#${this.title}`,
-                SK: `CATEGORYTITLE#${this.title}`
-            },
-            this.toItem()
-        ]
-    }
 }
 
 export class Subcategory extends Category{
@@ -69,8 +60,48 @@ export class Subcategory extends Category{
 
 export const createCategory = async (category: Category): Promise<Category> => {
     try{
-        await transactWrite(process.env.TABLE_NAME!, category.toPutTransactionItem());
+        let infos = []
+        infos.push(new TransactWriteInfo(({
+            PK: `CATEGORYTITLE#${category.title}`,
+            SK: `CATEGORYTITLE#${category.title}`
+        }), TransactType.PUT,AvailableConditionExpressions.itemDoesNotExistCondition));
+        infos.push(new TransactWriteInfo(category.toItem(), TransactType.PUT,AvailableConditionExpressions.itemDoesNotExistCondition));
+        await transactWrite(process.env.TABLE_NAME!, infos);
         return category;
+    }
+    catch(err){
+        console.log(err)
+        throw err;
+    }
+}
+
+export const createSubcategory = async(subcat: Subcategory): Promise<Subcategory> =>{
+    try{
+        await putItem(process.env.TABLE_NAME!, subcat.toItem());
+        return subcat;
+    }
+    catch(err){
+        console.log(err)
+        throw err;
+    }
+}
+
+export const updateSubcategory = async(subcat: Subcategory): Promise<Subcategory> =>{
+    try{
+        await updateItem(process.env.TABLE_NAME!, subcat.toItem());
+        return subcat;
+    }
+    catch(err){
+        console.log(err)
+        throw err;
+    }
+}
+
+
+export const deleteSubcategory = async(subcat: Subcategory): Promise<string|undefined> =>{
+    try{
+        let response = await deleteItem(process.env.TABLE_NAME!, subcat.PK, subcat.SK);
+        return response.$metadata.httpStatusCode?.toString();
     }
     catch(err){
         console.log(err)
@@ -80,7 +111,17 @@ export const createCategory = async (category: Category): Promise<Category> => {
 
 export const updateCategory = async (category: Category): Promise<Category> => {
     try{
-        await transactWrite(process.env.TABLE_NAME!, category.toPutTransactionItem());
+        let infos = [];
+        let current = await getCategory(category.id);
+        if(current.title !== category.title){
+            infos.push(new TransactWriteInfo(current.toItem(), TransactType.DELETE, AvailableConditionExpressions.itemExistsCondition));
+            infos.push(new TransactWriteInfo(({
+                PK: `CATEGORYTITLE#${category.title}`,
+                SK: `CATEGORYTITLE#${category.title}`
+            }), TransactType.PUT, AvailableConditionExpressions.itemDoesNotExistCondition));
+        }
+        infos.push(new TransactWriteInfo(category.toItem(), TransactType.PUT, AvailableConditionExpressions.itemExistsCondition));
+        await transactWrite(process.env.TABLE_NAME!, infos);
         return category;
     }
     catch(err){
@@ -108,7 +149,13 @@ export const deleteCategory = async(category: Category): Promise<string|undefine
     try{
         
         console.log(`Deleting category: ${JSON.stringify(category)}`);
-        let response = await transactDelete(process.env.TABLE_NAME!, category.toPutTransactionItem());
+        let infos = []
+        infos.push(new TransactWriteInfo(({
+            PK: `CATEGORYTITLE#${category.title}`,
+            SK: `CATEGORYTITLE#${category.title}`
+        }), TransactType.DELETE, AvailableConditionExpressions.itemExistsCondition));
+        infos.push(new TransactWriteInfo(category.toItem(), TransactType.DELETE, AvailableConditionExpressions.itemExistsCondition));
+        let response = await transactWrite(process.env.TABLE_NAME!, infos);
         console.log(`Response: ${JSON.stringify(response)}`);
         return response.$metadata.httpStatusCode?.toString();
     }
