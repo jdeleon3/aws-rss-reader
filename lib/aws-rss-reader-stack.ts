@@ -92,7 +92,7 @@ export class AwsRssReaderStack extends Stack {
 
     awsRssAPI.addRoutes({
       path: '/deleteCategory/{id}',
-      methods: [HttpMethod.DELETE],
+      methods: [HttpMethod.GET],
       integration: new HttpLambdaIntegration('DeleteCategoryIntegration', deleteCategoryFunction),
     });
 
