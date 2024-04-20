@@ -15,8 +15,8 @@ export const main: APIGatewayProxyHandlerV2 = async(event:APIGatewayProxyEventV2
         return {
             statusCode: 200,
             body: JSON.stringify(categories)
-        }
-    }
+        } 
+    }  
     catch(err){
         console.log(err)
         return {
