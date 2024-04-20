@@ -68,6 +68,12 @@ export class AwsRssReaderStack extends Stack {
       runtime: Runtime.NODEJS_20_X
     });
 
+    const getAllSubcategoriesFunction = new NodejsFunction(this, 'getAllSubcategoriesFunction', {
+      entry: 'handlers/GetAllSubcategories.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X
+    });
+
     const createSubcategoryFunction = new NodejsFunction(this, 'createSubcategoryFunction', {
       entry: 'handlers/CreateSubcategory.ts',
       handler: 'main',
@@ -89,6 +95,7 @@ export class AwsRssReaderStack extends Stack {
 
     createSubcategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
     getSubcategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
+    getAllSubcategoriesFunction.addEnvironment('TABLE_NAME', table.tableName);
 
     const awsRssAPI = new HttpApi(this,'AwsRssAPI');
     awsRssAPI.addRoutes({
@@ -129,6 +136,12 @@ export class AwsRssReaderStack extends Stack {
     });    
 
     awsRssAPI.addRoutes({
+      path: '/getAllSubcategories',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('GetAllSubcategoriesIntegration', getAllSubcategoriesFunction)
+    });    
+
+    awsRssAPI.addRoutes({
       path: '/createSubcategory',
       methods: [HttpMethod.POST],
       integration: new HttpLambdaIntegration('CreateSubcategoryIntegration', createSubcategoryFunction)
@@ -140,44 +153,15 @@ export class AwsRssReaderStack extends Stack {
       integration: new HttpLambdaIntegration('GetSubcategoryIntegration', getSubcategoryFunction)
     });
 
-    // Define and add permissions to the Stack Objects
-    /*const lambdaFullAccessPolicy = new PolicyStatement({
-      resources: [table.tableArn,`${table.tableArn}/index/*`],
-      actions: ['dynamodb:PutItem'
-                ,'dynamodb:GetItem'
-                ,'dynamodb:BatchGetItem'
-                ,'dynamodb:ConditionCheckItem'
-                ,'dynamodb:Query'
-                ,'dynamodb:UpdateItem'
-                ,'dynamodb:DeleteItem']
-    });
-
-    const lambdaReadAccessPolicy = new PolicyStatement({
-      resources: [table.tableArn,`${table.tableArn}/index/*`],
-      actions: ['dynamodb:GetItem'
-                ,'dynamodb:BatchGetItem'
-                ,'dynamodb:ConditionCheckItem'
-                ,'dynamodb:Query']
-    });*/
-
     table.grantReadData(getCategoryFunction);
     table.grantReadData(getAllCategoriesFunction);
     table.grantReadData(getSubcategoryFunction);
+    table.grantReadData(getAllSubcategoriesFunction);
 
     table.grantReadWriteData(createCategoryFunction);
     table.grantReadWriteData(updateCategoryFunction);
     table.grantReadWriteData(deleteCategoryFunction);
     table.grantReadWriteData(createSubcategoryFunction);
-    
-
-    //getAllCategoriesFunction.addToRolePolicy(lambdaReadAccessPolicy);
-    //createCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
-    //getCategoryFunction.addToRolePolicy(lambdaReadAccessPolicy);
-    //updateCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
-    //deleteCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
-
-    //createSubcategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
-    //getSubcategoryFunction.addToRolePolicy(lambdaReadAccessPolicy);
 
     // example resource
     // const queue = new sqs.Queue(this, 'AwsRssReaderQueue', {
