@@ -59,7 +59,7 @@ export class AwsRssReaderStack extends Stack {
       runtime: Runtime.NODEJS_20_X
     });
 
-    const createSubcategoryFunction = new NodejsFunction(this, 'createCategoryFunction', {
+    const createSubcategoryFunction = new NodejsFunction(this, 'createSubcategoryFunction', {
       entry: 'handlers/CreateSubcategory.ts',
       handler: 'main',
       runtime: Runtime.NODEJS_20_X
