@@ -48,7 +48,7 @@ export class Category extends BaseItem{
     }
     public getGSI1Keys(){
         return {
-            GSIPK: 'CATEGORY',
+            GSI1PK: 'CATEGORY',
             GSI1SK: this.title
         }
     }
