@@ -56,9 +56,9 @@ export async function putItem(tableName:string, item:Record<string,unknown>|unde
 
 export async function transactWrite(tableName: string, items: Record<string, unknown>[]|undefined): Promise<any> {
     getClient();
-    items?.forEach((item: Record<string, unknown>) => {
-        item = {Put: item};
-    })
+    items = items?.map((item: Record<string, unknown>) => ({
+        Put: item
+    }));
     console.log(items);
     let input: TransactWriteCommandInput = {
         TransactItems: items
@@ -76,9 +76,9 @@ export async function transactWrite(tableName: string, items: Record<string, unk
 
 export async function transactDelete(tableName: string, items: Record<string, unknown>[]|undefined): Promise<any> {
     getClient();
-    items?.forEach((item: Record<string, unknown>) => {
-        item = {Delete: item};
-    })
+    items = items?.map((item: Record<string, unknown>) => ({
+        Delete: item
+    }));
     const command = new TransactWriteCommand({
         TransactItems: items
     });
