@@ -1,6 +1,6 @@
 import {DynamoDB} from 'aws-sdk';
 import {BaseItem} from './BaseItem'
-import {putItem, getItem, updateItem, deleteItem} from './Client';
+import {putItem, getItem, updateItem, deleteItem, transactWrite} from './Client';
 import {getValue} from './Utils';
 import { ulid } from 'ulid';
 
@@ -42,6 +42,15 @@ export class Category extends BaseItem{
             id: this.id
         }
     }
+    toPutTransactionItem(): Record<string,unknown>[]{
+        return [            
+            {
+                PK: `CATEGORYTITLE#${this.title}`,
+                SK: `CATEGORYTITLE#${this.title}`
+            },
+            this.toItem()
+        ]
+    }
 }
 
 export class Subcategory extends Category{
@@ -60,7 +69,7 @@ export class Subcategory extends Category{
 
 export const createCategory = async (category: Category): Promise<Category> => {
     try{
-        await putItem(process.env.TABLE_NAME!, category.toItem());
+        await transactWrite(process.env.TABLE_NAME!, category.toPutTransactionItem());
         return category;
     }
     catch(err){
@@ -71,7 +80,7 @@ export const createCategory = async (category: Category): Promise<Category> => {
 
 export const updateCategory = async (category: Category): Promise<Category> => {
     try{
-        await updateItem(process.env.TABLE_NAME!, category.toItem());
+        await transactWrite(process.env.TABLE_NAME!, category.toPutTransactionItem());
         return category;
     }
     catch(err){

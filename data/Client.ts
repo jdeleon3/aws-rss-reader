@@ -1,14 +1,16 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutCommand, DynamoDBDocumentClient, GetCommand, GetCommandOutput, DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, DynamoDBDocumentClient, GetCommand, GetCommandOutput, DeleteCommand,TransactWriteCommand, TransactDeleteCommand } from "@aws-sdk/lib-dynamodb";
 
 let client: DynamoDBClient// = null
 
 export async function putItem(tableName:string, item:Record<string,unknown>|undefined): Promise<any> {
     getClient();
+    let condition:string = 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
+    
     const command = new PutCommand({
         TableName: tableName,
         Item: item,
-        ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
+        ConditionExpression: condition
     });
     const docClient = DynamoDBDocumentClient.from(client)
 
@@ -20,6 +22,8 @@ export async function putItem(tableName:string, item:Record<string,unknown>|unde
     //Update by replacing entire object
     export async function updateItem(tableName:string, item:Record<string,unknown>|undefined): Promise<any> {
         getClient();
+        let condition:string = 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
+    
         const command = new PutCommand({
             TableName: tableName,
             Item: item,
@@ -48,6 +52,36 @@ export async function putItem(tableName:string, item:Record<string,unknown>|unde
             console.log(response);
             return response;
             }
+
+export async function transactWrite(tableName: string, items: Record<string, unknown>[]|undefined): Promise<any> {
+    getClient();
+    items?.forEach((item: Record<string, unknown>) => {
+        item = {Put: item};
+    })
+    const command = new TransactWriteCommand({
+        TransactItems: items
+    });
+    const docClient = DynamoDBDocumentClient.from(client)
+
+    const response = await docClient.send(command);
+    console.log(response);
+    return response;
+    }
+
+export async function transactDelete(tableName: string, items: Record<string, unknown>[]|undefined): Promise<any> {
+    getClient();
+    items?.forEach((item: Record<string, unknown>) => {
+        item = {Delete: item};
+    })
+    const command = new TransactWriteCommand({
+        TransactItems: items
+    });
+    const docClient = DynamoDBDocumentClient.from(client)
+
+    const response = await docClient.send(command);
+    console.log(response);
+    return response;
+    }
 
 export async function getItem(tableName: string, pk: string, sk: string): Promise<GetCommandOutput> {
     getClient();
