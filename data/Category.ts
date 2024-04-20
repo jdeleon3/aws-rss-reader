@@ -62,6 +62,7 @@ export const createCategory = async (category: Category): Promise<Category> => {
         let infos = []
         infos.push(new TransactWriteInfo(category.TitleKeys(), TransactType.PUT,AvailableConditionExpressions.itemDoesNotExistCondition));
         infos.push(new TransactWriteInfo(category.toItem(), TransactType.PUT,AvailableConditionExpressions.itemDoesNotExistCondition));
+        console.log(JSON.stringify(infos));
         await transactWrite(process.env.TABLE_NAME!, infos);
         return category;
     }
