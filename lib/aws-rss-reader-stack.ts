@@ -85,6 +85,18 @@ export class AwsRssReaderStack extends Stack {
       handler: 'main',
       runtime: Runtime.NODEJS_20_X
     });
+    
+    const updateSubcategoryFunction = new NodejsFunction(this, 'updateSubcategoryFunction', {
+      entry: 'handlers/UpdateSubcategory.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X
+    });
+    
+    const deleteSubcategoryFunction = new NodejsFunction(this, 'deleteSubcategoryFunction', {
+      entry: 'handlers/DeleteSubcategory.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X
+    });
 
     awsRssRegisterFunction.addEnvironment('TABLE_NAME', table.tableName);
     createCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
@@ -95,6 +107,8 @@ export class AwsRssReaderStack extends Stack {
 
     createSubcategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
     getSubcategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
+    updateSubcategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
+    deleteSubcategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
     getAllSubcategoriesFunction.addEnvironment('TABLE_NAME', table.tableName);
 
     const awsRssAPI = new HttpApi(this,'AwsRssAPI');
@@ -137,7 +151,7 @@ export class AwsRssReaderStack extends Stack {
 
     awsRssAPI.addRoutes({
       path: '/getAllSubcategories/{parentCategoryId}',
-      methods: [HttpMethod.POST],
+      methods: [HttpMethod.GET],
       integration: new HttpLambdaIntegration('GetAllSubcategoriesIntegration', getAllSubcategoriesFunction)
     });    
 
@@ -151,6 +165,18 @@ export class AwsRssReaderStack extends Stack {
       path: '/getSubcategory',
       methods: [HttpMethod.POST],
       integration: new HttpLambdaIntegration('GetSubcategoryIntegration', getSubcategoryFunction)
+    });    
+
+    awsRssAPI.addRoutes({
+      path: '/updateSubcategory',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('UpdateSubcategoryIntegration', updateSubcategoryFunction),
+    });    
+
+    awsRssAPI.addRoutes({
+      path: '/deleteSubcategory',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('DeleteSubcategoryIntegration', deleteSubcategoryFunction),
     });
 
     table.grantReadData(getCategoryFunction);
@@ -162,6 +188,8 @@ export class AwsRssReaderStack extends Stack {
     table.grantReadWriteData(updateCategoryFunction);
     table.grantReadWriteData(deleteCategoryFunction);
     table.grantReadWriteData(createSubcategoryFunction);
+    table.grantReadWriteData(updateSubcategoryFunction);
+    table.grantReadWriteData(deleteSubcategoryFunction);
 
     // example resource
     // const queue = new sqs.Queue(this, 'AwsRssReaderQueue', {
