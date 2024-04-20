@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutCommand, DynamoDBDocumentClient, GetCommand, GetCommandOutput, DeleteCommand,TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, DynamoDBDocumentClient, GetCommand, GetCommandOutput, DeleteCommand,TransactWriteCommand, TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
 
 let client: DynamoDBClient// = null
 
@@ -59,10 +59,14 @@ export async function transactWrite(tableName: string, items: Record<string, unk
     items?.forEach((item: Record<string, unknown>) => {
         item = {Put: item};
     })
-    const command = new TransactWriteCommand({
+    console.log(items);
+    let input: TransactWriteCommandInput = {
         TransactItems: items
-    });
-    console.log(command);
+    }
+    
+    
+    console.log(input);
+    const command = new TransactWriteCommand(input);    
     const docClient = DynamoDBDocumentClient.from(client)
 
     const response = await docClient.send(command);
