@@ -7,6 +7,7 @@ import {Stack, StackProps} from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import {PolicyStatement} from 'aws-cdk-lib/aws-iam';
 import { create } from 'domain';
+import { getAllCategories } from '../data/Category';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class AwsRssReaderStack extends Stack {
@@ -21,11 +22,13 @@ export class AwsRssReaderStack extends Stack {
       ,billingMode: dynamodb.BillingMode.PAY_PER_REQUEST
       ,stream: dynamodb.StreamViewType.NEW_IMAGE
     });
+    
 
     table.addGlobalSecondaryIndex({
       indexName: 'GSI1',
       partitionKey: {name: 'GSI1PK', type: dynamodb.AttributeType.STRING},
-      sortKey: {name: 'GSI1SK', type: dynamodb.AttributeType.STRING}
+      sortKey: {name: 'GSI1SK', type: dynamodb.AttributeType.STRING},
+      projectionType: dynamodb.ProjectionType.ALL
     });
 
     const awsRssRegisterFunction = new NodejsFunction(this, 'AwsRssRegisterFunction', {
@@ -138,7 +141,7 @@ export class AwsRssReaderStack extends Stack {
     });
 
     // Define and add permissions to the Stack Objects
-    const lambdaFullAccessPolicy = new PolicyStatement({
+    /*const lambdaFullAccessPolicy = new PolicyStatement({
       resources: [table.tableArn,`${table.tableArn}/index/*`],
       actions: ['dynamodb:PutItem'
                 ,'dynamodb:GetItem'
@@ -155,16 +158,26 @@ export class AwsRssReaderStack extends Stack {
                 ,'dynamodb:BatchGetItem'
                 ,'dynamodb:ConditionCheckItem'
                 ,'dynamodb:Query']
-    });
+    });*/
 
-    getAllCategoriesFunction.addToRolePolicy(lambdaReadAccessPolicy);
-    createCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
-    getCategoryFunction.addToRolePolicy(lambdaReadAccessPolicy);
-    updateCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
-    deleteCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
+    table.grantReadData(getCategoryFunction);
+    table.grantReadData(getAllCategoriesFunction);
+    table.grantReadData(getSubcategoryFunction);
 
-    createSubcategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
-    getSubcategoryFunction.addToRolePolicy(lambdaReadAccessPolicy);
+    table.grantReadWriteData(createCategoryFunction);
+    table.grantReadWriteData(updateCategoryFunction);
+    table.grantReadWriteData(deleteCategoryFunction);
+    table.grantReadWriteData(createSubcategoryFunction);
+    
+
+    //getAllCategoriesFunction.addToRolePolicy(lambdaReadAccessPolicy);
+    //createCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
+    //getCategoryFunction.addToRolePolicy(lambdaReadAccessPolicy);
+    //updateCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
+    //deleteCategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
+
+    //createSubcategoryFunction.addToRolePolicy(lambdaFullAccessPolicy);
+    //getSubcategoryFunction.addToRolePolicy(lambdaReadAccessPolicy);
 
     // example resource
     // const queue = new sqs.Queue(this, 'AwsRssReaderQueue', {
