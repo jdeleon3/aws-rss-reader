@@ -38,6 +38,7 @@ export async function putItem(tableName:string, item:Record<string,unknown>|unde
 
         export async function deleteItem(tableName:string, pk: string, sk: string): Promise<any> {
             getClient();
+
             const command = new DeleteCommand({
                 TableName: tableName,
                 Key: {
@@ -61,6 +62,7 @@ export async function transactWrite(tableName: string, items: Record<string, unk
     const command = new TransactWriteCommand({
         TransactItems: items
     });
+    console.log(command);
     const docClient = DynamoDBDocumentClient.from(client)
 
     const response = await docClient.send(command);
