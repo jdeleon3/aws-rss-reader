@@ -35,7 +35,7 @@ export class AwsRssReaderStack extends Stack {
     });
 
     //Category functions    
-    const getAllCategoriesFunction = new NodejsFunction(this, 'getCategoryFunction', {
+    const getAllCategoriesFunction = new NodejsFunction(this, 'getAllCategoriesFunction', {
       entry: 'handlers/GetAllCategories.ts',
       handler: 'main',
       runtime: Runtime.NODEJS_20_X
@@ -82,6 +82,7 @@ export class AwsRssReaderStack extends Stack {
     getCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
     updateCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
     deleteCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
+    getAllCategoriesFunction.addEnvironment('TABLE_NAME', table.tableName);
 
     createSubcategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
     getSubcategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
