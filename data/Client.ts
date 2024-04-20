@@ -103,15 +103,16 @@ export async function getItem(tableName: string, pk: string, sk: string): Promis
     }
 
 
-export async function queryItems(tableName: string, indexName:string, keyConditionExpression: string, expressionValues:Record<string,any>){
+export async function queryItems(tableName: string, indexName:string|undefined, keyConditionExpression: string, expressionValues:Record<string,any>){
     getClient();
     console.log(expressionValues);
     const docClient = DynamoDBDocumentClient.from(client)
     const command = new QueryCommand({
         TableName: tableName,
-        IndexName: indexName,
+        
         KeyConditionExpression: keyConditionExpression,
-        ExpressionAttributeValues: expressionValues
+        ExpressionAttributeValues: expressionValues,
+        ...(indexName?{IndexName: indexName}:{})
       });
       console.log(command);    
       const response = await docClient.send(command);

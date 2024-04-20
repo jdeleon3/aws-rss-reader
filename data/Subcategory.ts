@@ -1,6 +1,6 @@
 
 import {BaseItem} from './BaseItem'
-import {getItem, transactWrite, TransactWriteInfo,TransactType,AvailableConditionExpressions} from './Client';
+import {getItem, queryItems} from './Client';
 import {getValue} from './Utils';
 import { ulid } from 'ulid';
 import {Category} from './Category';
@@ -31,6 +31,11 @@ export class Subcategory extends Category{
     static formatIdToSK(id:string){
         return `SUBCATEGORY#${id}`;
     }
+    static FromItem(item?:Record<string,any>): Subcategory {
+        if(!item) throw new Error('Item is null');
+        console.log(JSON.stringify(item));
+        return new Subcategory(getValue(item.title), getValue(item.description),getValue(item.id), getValue(item.parentCategoryId));
+    }
     
 
     toItem(): Record<string, unknown> {
@@ -50,6 +55,19 @@ export const getSubcategory = async(id: string, parentId: string): Promise<Subca
         let response = await getItem(process.env.TABLE_NAME!, Subcategory.formatIdToPK(parentId), Subcategory.formatIdToSK(id));
         console.log(`Response: ${JSON.stringify(response)}`);
         return Subcategory.FromItem(response.Item) as Subcategory;
+    }
+    catch(err){
+        console.log(err)
+        throw err;
+    }
+}
+
+export const getAllSubcategories = async(parentId: string): Promise<Subcategory[]> =>{
+    try{
+        console.log(`Getting all subcategories with parent id: ${parentId}`);
+        let response = await queryItems(process.env.TABLE_NAME!,undefined,"PK = :val",{':val': Subcategory.formatIdToPK(parentId)})
+        console.log(`Response: ${JSON.stringify(response)}`);
+        return response.Items?.map(Subcategory.FromItem) || [];
     }
     catch(err){
         console.log(err)
