@@ -71,11 +71,8 @@ export async function transactWrite(tableName: string, items: TransactWriteInfo[
             else if(cmd.transType == TransactType.DELETE){
                 input.TransactItems?.push({Delete: {
                     TableName: tableName,
-                    Key: {
-                        PK: cmd.item.pk,
-                        SK: cmd.item.sk
-                    },
-                    ...(cmd.conditionExpression?{ConditionExpression: cmd.conditionExpression}:{})
+                    Key: cmd.item,
+                    ConditionExpression: AvailableConditionExpressions.itemExistsCondition
                 }});
             }
             
