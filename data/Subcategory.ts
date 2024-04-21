@@ -9,7 +9,7 @@ import {Category} from './Category';
 export class Subcategory extends Category{
     ParentCategoryId: string
     constructor(title: string, description: string, parentCategoryId: string, id:string = ulid()){
-        super(title, description)
+        super(title, description, id)
         this.ParentCategoryId = parentCategoryId
     }   
     override get PK(): string {
