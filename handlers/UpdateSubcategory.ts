@@ -9,6 +9,14 @@ export const main: APIGatewayProxyHandlerV2 = async(event:APIGatewayProxyEventV2
         }
     }
     const request:any = JSON.parse(event.body);
+    if(!request.id || !request.parentCategoryId){
+        return {
+            statusCode: 400,
+            body: JSON.stringify({message: 'No ids'
+                , request: request
+            })
+        }
+    }
     try{
         const response = await updateSubcategory(new Subcategory(request.title,request.description, request.parentCategoryId, request.id));
         return {
