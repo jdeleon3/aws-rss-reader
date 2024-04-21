@@ -9,7 +9,7 @@ export const main: APIGatewayProxyHandlerV2 = async (event: APIGatewayProxyEvent
     }
     const request:any = JSON.parse(event.body);
     try{
-        const response = await deleteCategory(new Subcategory(request.title,request.description, request.id, request.parentCategoryId));
+        const response = await deleteCategory(new Subcategory(request.title,request.description, request.parentCategoryId, request.id));
         return {
             statusCode: 200,
             body: JSON.stringify(response)

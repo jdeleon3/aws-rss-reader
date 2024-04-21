@@ -51,7 +51,7 @@ export class Subcategory extends Category{
     }
 }
 
-export const getSubcategory = async(id: string, parentId: string): Promise<Subcategory> =>{
+export const getSubcategory = async(parentId: string,id: string): Promise<Subcategory> =>{
     try{
         console.log(`Getting subcategory with id: ${id}, parent Category id: ${parentId}`);
         let response = await getItem(process.env.TABLE_NAME!, Subcategory.formatIdToPK(parentId), Subcategory.formatIdToSK(id));
@@ -66,7 +66,7 @@ export const getSubcategory = async(id: string, parentId: string): Promise<Subca
 export const updateSubcategory = async (category: Subcategory): Promise<Subcategory> => {
     try{
         let infos = [];
-        let current = await getSubcategory(category.id, category.ParentCategoryId);
+        let current = await getSubcategory(category.ParentCategoryId,category.id);
         console.log(`Current: ${JSON.stringify(current)}`);
         if(current.title !== category.title){
             infos.push(new TransactWriteInfo(current.TitleKeys(), TransactType.DELETE, AvailableConditionExpressions.itemExistsCondition));

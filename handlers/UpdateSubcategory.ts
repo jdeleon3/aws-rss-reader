@@ -10,7 +10,7 @@ export const main: APIGatewayProxyHandlerV2 = async(event:APIGatewayProxyEventV2
     }
     const request:any = JSON.parse(event.body);
     try{
-        const response = await updateSubcategory(new Subcategory(request.title,request.description, request.id, request.parentCategoryId));
+        const response = await updateSubcategory(new Subcategory(request.title,request.description, request.parentCategoryId, request.id));
         return {
             body:JSON.stringify(response),
             statusCode:200
