@@ -132,7 +132,7 @@ export class AwsRssReaderStack extends Stack {
       entry: 'handlers/ProcessRssFeed.ts',
       handler: 'main',
       runtime: Runtime.NODEJS_20_X,
-      timeout: Duration.seconds(60),
+      timeout: Duration.seconds(30),
       memorySize: 1024
     });
     processRssFeedFunction.addEventSource(new SqsEventSource(feedProcessingQueue, {
