@@ -13,9 +13,11 @@ export class Subcategory extends Category{
         this.ParentCategoryId = parentCategoryId
     }   
     override get PK(): string {
+        console.log("overriding Subcategory PK generation...")
         return Subcategory.formatIdToPK(this.ParentCategoryId);
     }
     override get SK(): string {        
+        console.log("overriding Subcategory SK generation...")
         return Subcategory.formatIdToSK(this.id);
     }
     public override TitleKeys(){
