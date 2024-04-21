@@ -222,7 +222,7 @@ export class AwsRssReaderStack extends Stack {
     });
 
     awsRssAPI.addRoutes({
-      path: '/getAllFeeds',
+      path: '/getAllFeeds/{subcategoryId}',
       methods: [HttpMethod.GET],
       integration: new HttpLambdaIntegration('GetAllFeedsIntegration', getAllFeedsFunction),
     });
