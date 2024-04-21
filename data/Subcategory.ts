@@ -1,6 +1,6 @@
 
 import {BaseItem} from './BaseItem'
-import {getItem, queryItems} from './Client';
+import {getItem, queryItems, TransactWriteInfo, TransactType,AvailableConditionExpressions, transactWrite} from './Client';
 import {getValue} from './Utils';
 import { ulid } from 'ulid';
 import {Category} from './Category';
@@ -55,6 +55,23 @@ export const getSubcategory = async(id: string, parentId: string): Promise<Subca
         let response = await getItem(process.env.TABLE_NAME!, Subcategory.formatIdToPK(parentId), Subcategory.formatIdToSK(id));
         console.log(`Response: ${JSON.stringify(response)}`);
         return Subcategory.FromItem(response.Item) as Subcategory;
+    }
+    catch(err){
+        console.log(err)
+        throw err;
+    }
+}
+export const updateSubcategory = async (category: Subcategory): Promise<Subcategory> => {
+    try{
+        let infos = [];
+        let current = await getSubcategory(category.id, category.ParentCategoryId);
+        if(current.title !== category.title){
+            infos.push(new TransactWriteInfo(current.TitleKeys(), TransactType.DELETE, AvailableConditionExpressions.itemExistsCondition));
+            infos.push(new TransactWriteInfo(category.TitleKeys(), TransactType.PUT, AvailableConditionExpressions.itemDoesNotExistCondition));
+        }
+        infos.push(new TransactWriteInfo(category.toItem(), TransactType.PUT, AvailableConditionExpressions.itemExistsCondition));
+        await transactWrite(process.env.TABLE_NAME!, infos);
+        return category;
     }
     catch(err){
         console.log(err)
