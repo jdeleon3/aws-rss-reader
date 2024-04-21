@@ -36,7 +36,7 @@ export class Subcategory extends Category{
     static FromItem(item?:Record<string,any>): Subcategory {
         if(!item) throw new Error('Item is null');
         console.log(JSON.stringify(item));
-        return new Subcategory(getValue(item.title), getValue(item.description),getValue(item.id), getValue(item.parentCategoryId));
+        return new Subcategory(getValue(item.title), getValue(item.description),getValue(item.parentCategoryId),getValue(item.id), );
     }
     
 
