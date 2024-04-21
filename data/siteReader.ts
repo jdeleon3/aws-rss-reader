@@ -1,8 +1,10 @@
 import axios from 'axios'
 import * as cheerio from 'cheerio'
+import { FeedItem } from './FeedItem';
 
 
 export class siteReader{
+    
     public static async getRssLink(url:string){
         console.log(`Getting rss link from ${url}`);
         if(this.getSiteType(url) == 'reddit'){
@@ -22,7 +24,7 @@ export class siteReader{
         return rssLink;
     }
     
-    public static getSiteType(siteUrl:string){
+    static getSiteType(siteUrl:string){
         let uri = new URL(siteUrl)
         if (uri.hostname.includes('youtube.com')){
             return 'youtube'
@@ -36,5 +38,37 @@ export class siteReader{
         else{
             return 'site'
         }
+    }
+    static processSiteFeed = async(rssUrl: string | undefined, feedId:string):Promise<FeedItem[]> => {
+        if(!rssUrl){
+            return []
+        }
+        const {data} = await axios.get(rssUrl);
+        let c = cheerio.load(data)
+        let items = c('entry');
+        if(!items){
+            items = c('item');        
+        }
+        console.log(items);
+        if(!items || items.length === 0){
+            return []
+        }
+        let feedItems:FeedItem[] = [];
+        items.each((i, item) => {
+            let title = c(item).find('title').text();
+            let link = c(item).find('link').text();
+            let description = c(item).find('description').text();
+            let content = c(item).find('content').text();
+            let author = c(item).find('author').text();
+            let published = c(item).find('published').text();
+            if(!published){
+                published = c(item).find('pubDate').text();
+            }
+            feedItems.push(new FeedItem(feedId,title, link,description, content,author,published));
+        })
+        console.log(feedItems);
+        return feedItems;
+
+
     }
 }

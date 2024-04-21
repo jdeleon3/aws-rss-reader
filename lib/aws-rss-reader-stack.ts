@@ -5,9 +5,7 @@ import {Runtime} from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import {Duration, Stack, StackProps} from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import {PolicyStatement} from 'aws-cdk-lib/aws-iam';
-import { create } from 'domain';
-import { getAllCategories } from '../data/Category';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class AwsRssReaderStack extends Stack {
@@ -15,6 +13,7 @@ export class AwsRssReaderStack extends Stack {
     super(scope, id, props);
 
     // Define The Stack
+    //DynamoDB Tables
     const table = new dynamodb.Table(this, 'aws-rss-reader', {
       partitionKey: {name: 'PK', type: dynamodb.AttributeType.STRING}
       ,sortKey: {name: 'SK', type: dynamodb.AttributeType.STRING}
@@ -36,6 +35,11 @@ export class AwsRssReaderStack extends Stack {
       partitionKey: {name: 'GSI2PK', type: dynamodb.AttributeType.STRING},
       sortKey: {name: 'GSI2SK', type: dynamodb.AttributeType.STRING},
       projectionType: dynamodb.ProjectionType.ALL
+    });
+
+    //SQS Queues
+    const feedProcessingQueue = new sqs.Queue(this, 'feedProcessingQueue', {
+      queueName: 'feedProcessingQueue'
     });
 
     //Category functions    
@@ -124,6 +128,13 @@ export class AwsRssReaderStack extends Stack {
       runtime: Runtime.NODEJS_20_X
     });
 
+    const processRssFeedFunction = new NodejsFunction(this, 'processRssFeedFunction', {
+      entry: 'handlers/ProcessRssFeed.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X,
+      timeout: Duration.seconds(60),
+      memorySize: 1024
+    });
 
     
     createCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
@@ -142,6 +153,10 @@ export class AwsRssReaderStack extends Stack {
     getFeedFunction.addEnvironment('TABLE_NAME', table.tableName);
     deleteFeedFunction.addEnvironment('TABLE_NAME', table.tableName);
     getAllFeedsFunction.addEnvironment('TABLE_NAME', table.tableName);
+    processRssFeedFunction.addEnvironment('TABLE_NAME', table.tableName);
+
+    processRssFeedFunction.addEnvironment('FEED_PROCESSING_QUEUE', feedProcessingQueue.queueUrl);
+    createFeedFunction.addEnvironment('FEED_PROCESSING_QUEUE', feedProcessingQueue.queueUrl);
 
     const awsRssAPI = new HttpApi(this,'AwsRssAPI');
     awsRssAPI.addRoutes({
@@ -227,6 +242,8 @@ export class AwsRssReaderStack extends Stack {
       integration: new HttpLambdaIntegration('GetAllFeedsIntegration', getAllFeedsFunction),
     });
 
+    
+
     table.grantReadData(getCategoryFunction);
     table.grantReadData(getAllCategoriesFunction);
     table.grantReadData(getSubcategoryFunction);
@@ -242,6 +259,9 @@ export class AwsRssReaderStack extends Stack {
     table.grantReadWriteData(deleteSubcategoryFunction);
     table.grantReadWriteData(createFeedFunction);
     table.grantReadWriteData(deleteFeedFunction);
+
+    feedProcessingQueue.grantConsumeMessages(processRssFeedFunction);
+    feedProcessingQueue.grantSendMessages(createFeedFunction);
 
     // example resource
     // const queue = new sqs.Queue(this, 'AwsRssReaderQueue', {

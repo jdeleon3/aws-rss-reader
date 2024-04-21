@@ -1,41 +1,72 @@
 import {BaseItem} from './BaseItem'
-import {getItem, queryItems, TransactWriteInfo, TransactType,AvailableConditionExpressions, transactWrite} from './Client';
+import {getItem, queryItems, TransactWriteInfo, TransactType,AvailableConditionExpressions, putItem} from './Client';
 import { ulid } from 'ulid';
-
+import {Message} from '@aws-sdk/client-sqs'
+import {Feed} from './Feed'
+import { siteReader } from './siteReader';
 export class FeedItem extends BaseItem{
 id: string
 title: string
 link: string
 description:string
-image: string	
 author: string	
-date: string	
-aiSummary: string
+published: string	
+aiSummary: string | undefined
 feedId: string
+content: string
 
-constructor(title: string, link: string, description:string, image: string, author: string, date: string, aiSummary: string, feedId: string, id:string = ulid()){
+constructor(feedId: string, title: string, link: string, description:string, content:string, author: string, published: string, aiSummary?: string, id:string = ulid()){
     super()
     this.id = id
     this.title = title
     this.link = link
     this.description = description
-    this.image = image
     this.author = author
-    this.date = date
+    this.published = published
     this.aiSummary = aiSummary
     this.feedId = feedId
+    this.content = content
 }
 
 
     get PK(): string {
-        throw new Error('Method not implemented.');
+        return `FI#${this.feedId}`
     }
     get SK(): string {
-        throw new Error('Method not implemented.');
+        return `FEEDITEM#${this.id}`
     }
     toItem(): Record<string, unknown> {
-        throw new Error('Method not implemented.');
+        return {
+            ...this.Keys(),
+            title: this.title,
+            link: this.link,
+            description: this.description,
+            author: this.author,
+            published: this.published,
+            aiSummary: this.aiSummary,
+            content: this.content
+        }
     }
 
     
+}
+
+export const processFeedRequest = async(feed:Feed):Promise<void> =>{
+    if(!feed){
+        return
+    }
+    
+    let feedItems = await siteReader.processSiteFeed(feed.rssUrl, feed.id);
+    if(!feedItems || feedItems.length === 0){
+        return
+    }    
+    feedItems.forEach( async f => {
+        try{
+            await putItem(process.env.TABLE_NAME!, f.toItem());        
+        }
+        catch(e){
+            console.log(e);
+        }        
+    });
+        
 }
