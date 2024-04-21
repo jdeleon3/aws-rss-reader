@@ -3,7 +3,8 @@ import { Feed } from './Feed';
 import { processFeedRequest } from './FeedItem';
 
 const sqsClient:SQSClient = new SQSClient({})
-const SQS_QUEUE_URL:string|undefined = process.env.FEED_PROCESSING_QUEUE
+//@ts-ignore
+const SQS_QUEUE_URL:string = process.env.FEED_PROCESSING_QUEUE
 
 const receiveMessage = (queueUrl: string|undefined) => {
     return sqsClient.send(new ReceiveMessageCommand({
@@ -19,12 +20,12 @@ const receiveMessage = (queueUrl: string|undefined) => {
 
 
 export class SqsManager{
-    static processRequests = async(queueUrl:string|undefined=SQS_QUEUE_URL):Promise<void> => {
+    static processRequests = async(queueUrl:string=SQS_QUEUE_URL):Promise<void> => {
     if(!queueUrl){
         console.log("No queue url");
         return;
     }       
-    console.log(`Processing queue: ${queueUrl}`);
+    console.log(`Processing queue: ${JSON.stringify(queueUrl)}`);
     const result = await receiveMessage(queueUrl);
     if(!result || !result.Messages || result.Messages.length === 0){
         console.log("No messages");
