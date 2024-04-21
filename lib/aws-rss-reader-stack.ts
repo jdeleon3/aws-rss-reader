@@ -3,7 +3,7 @@ import  {HttpLambdaIntegration} from 'aws-cdk-lib/aws-apigatewayv2-integrations'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import {Runtime} from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
-import {Stack, StackProps} from 'aws-cdk-lib';
+import {Duration, Stack, StackProps} from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import {PolicyStatement} from 'aws-cdk-lib/aws-iam';
 import { create } from 'domain';
@@ -102,7 +102,8 @@ export class AwsRssReaderStack extends Stack {
     const createFeedFunction = new NodejsFunction(this, 'createFeedFunction', {
       entry: 'handlers/CreateFeed.ts',
       handler: 'main',
-      runtime: Runtime.NODEJS_20_X
+      runtime: Runtime.NODEJS_20_X,
+      timeout: Duration.seconds(30)
     });
 
     const getFeedFunction = new NodejsFunction(this, 'getFeedFunction', {
