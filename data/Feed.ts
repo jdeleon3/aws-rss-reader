@@ -1,7 +1,7 @@
 import {BaseItem} from './BaseItem'
 import {getItem, queryItems, TransactWriteInfo, TransactType,AvailableConditionExpressions, transactWrite} from './Client';
 import { ulid } from 'ulid';
-import {siteReader} from './SiteReader';
+import {siteReader} from './siteReader';
 
 export class Feed extends BaseItem {
     id: string
