@@ -11,14 +11,14 @@ export class Feed extends BaseItem {
     subcategoryId: string;
     categoryId: string;
 
-    constructor(siteUrl: string, subCategoryId: string, categoryId: string, rssUrl?: string, lastScanned?: Date, id: string = ulid()){
+    constructor(siteUrl: string, subcategoryId: string, categoryId: string, rssUrl?: string, lastScanned?: Date, id: string = ulid()){
         super()
         this.id = id
         this.feedType = Feed.getSiteType(siteUrl)
         this.siteUrl = siteUrl
         this.rssUrl = rssUrl
         this.lastScanned = lastScanned
-        this.subcategoryId = subCategoryId
+        this.subcategoryId = subcategoryId
         this.categoryId = categoryId
     }
     
@@ -53,7 +53,7 @@ export class Feed extends BaseItem {
     public getUrlKeys(){
         return {
             PK: `FEEDURL#${this.siteUrl}`,
-            SK: `RSSURL#${this.rssUrl}`
+            SK: `FEEDURL#${this.siteUrl}`
         }
     }
 
