@@ -95,10 +95,11 @@ export async function getItem(tableName: string, pk: string, sk: string): Promis
             SK: sk
         }
     });
+    console.log(`Get Command: ${command}`);
     const docClient = DynamoDBDocumentClient.from(client)
 
     const response = await docClient.send(command);
-    console.log(response);
+    console.log(`Get Response: ${JSON.stringify(response)}`);
     return response;
     }
 
