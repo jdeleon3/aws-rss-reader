@@ -3,6 +3,7 @@ import * as cheerio from 'cheerio'
 
 export class siteReader{
     public static async getRssLink(url:string){
+        console.log(`Getting rss link from ${url}`);
         const {data} = await axios.get(url)
         let c = cheerio.load(data)
         let rssLink = c('link[type="application/rss+xml"]').attr('href');

@@ -89,9 +89,11 @@ export class Feed extends BaseItem {
 }
 
 export const createFeed = async (feed: Feed): Promise<Feed> => {
+    console.log(`Creating Feed: ${JSON.stringify(feed)}`);
     if(!feed.rssUrl){
         feed.rssUrl = await siteReader.getRssLink(feed.siteUrl)
     }
+    console.log(`Rss Url: ${feed.rssUrl}`);
     let infos = []
     infos.push(new TransactWriteInfo(feed.getUrlKeys(), TransactType.PUT,AvailableConditionExpressions.itemDoesNotExistCondition));
     infos.push(new TransactWriteInfo(feed.toItem(), TransactType.PUT,AvailableConditionExpressions.itemDoesNotExistCondition));
