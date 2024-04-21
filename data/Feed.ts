@@ -15,7 +15,7 @@ export class Feed extends BaseItem {
     constructor(siteUrl: string, subcategoryId: string, categoryId: string, rssUrl?: string, lastScanned?: Date, id: string = ulid()){
         super()
         this.id = id
-        this.feedType = Feed.getSiteType(siteUrl)
+        this.feedType = siteReader.getSiteType(siteUrl)
         this.siteUrl = siteUrl
         this.rssUrl = rssUrl
         this.lastScanned = lastScanned
@@ -36,21 +36,7 @@ export class Feed extends BaseItem {
             GSI2SK: this.PK
         }
     }
-    public static getSiteType(siteUrl:string){
-        let uri = new URL(siteUrl)
-        if (uri.hostname.includes('youtube.com')){
-            return 'youtube'
-        }
-        else if (uri.hostname.includes('reddit.com')){
-            return 'twitter'
-        }
-        else if (uri.hostname.includes('quora.com')){
-            return 'quora'
-        }
-        else{
-            return 'site'
-        }
-    }
+    
     public getUrlKeys(){
         return {
             PK: `FEEDURL#${this.siteUrl}`,
@@ -76,7 +62,7 @@ export class Feed extends BaseItem {
             lastScanned: this.lastScanned,
             subCategoryId: this.subcategoryId,
             categoryId: this.categoryId,
-            type: Feed.getSiteType(this.siteUrl)
+            type: siteReader.getSiteType(this.siteUrl)
         }
 
     }

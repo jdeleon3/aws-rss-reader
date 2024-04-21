@@ -1,9 +1,13 @@
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 
+
 export class siteReader{
     public static async getRssLink(url:string){
         console.log(`Getting rss link from ${url}`);
+        if(this.getSiteType(url) == 'reddit'){
+            return `${url}.rss`;
+        }        
         const {data} = await axios.get(url)
         let c = cheerio.load(data)
         let rssLink = c('link[type="application/rss+xml"]').attr('href');
@@ -16,5 +20,21 @@ export class siteReader{
             }
         } 
         return rssLink;
+    }
+    
+    public static getSiteType(siteUrl:string){
+        let uri = new URL(siteUrl)
+        if (uri.hostname.includes('youtube.com')){
+            return 'youtube'
+        }
+        else if (uri.hostname.includes('reddit.com')){
+            return 'reddit'
+        }
+        else if (uri.hostname.includes('quora.com')){
+            return 'quora'
+        }
+        else{
+            return 'site'
+        }
     }
 }
