@@ -9,6 +9,7 @@ export const main = async(queueUrl:string|undefined=SQS_QUEUE_URL) =>{
 }
 
 // Invoke main function if this file was run directly.
+//@ts-ignore
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     main();
   }
