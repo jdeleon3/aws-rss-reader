@@ -1,6 +1,5 @@
 import {APIGatewayProxyEventV2, APIGatewayProxyResultV2, APIGatewayProxyHandlerV2} from 'aws-lambda'
-import {updateCategory} from '../data/Category'
-import { Subcategory } from '../data/Subcategory';
+import { Subcategory, updateSubcategory } from '../data/Subcategory';
 
 export const main: APIGatewayProxyHandlerV2 = async(event:APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> =>{
     if(!event.body){
@@ -11,7 +10,7 @@ export const main: APIGatewayProxyHandlerV2 = async(event:APIGatewayProxyEventV2
     }
     const request:any = JSON.parse(event.body);
     try{
-        const response = await updateCategory(new Subcategory(request.title,request.description, request.id, request.parentCategoryId));
+        const response = await updateSubcategory(new Subcategory(request.title,request.description, request.id, request.parentCategoryId));
         return {
             body:JSON.stringify(response),
             statusCode:200
