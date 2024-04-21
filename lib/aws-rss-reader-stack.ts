@@ -5,8 +5,8 @@ import {Runtime} from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import {Duration, Stack, StackProps} from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import {Queue} from 'aws-cdk-lib/aws-sqs';
+import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 
 export class AwsRssReaderStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -38,7 +38,7 @@ export class AwsRssReaderStack extends Stack {
     });
 
     //SQS Queues
-    const feedProcessingQueue = new sqs.Queue(this, 'feedProcessingQueue', {
+    const feedProcessingQueue = new Queue(this, 'feedProcessingQueue', {
       queueName: 'feedProcessingQueue'
     });
 
@@ -135,6 +135,9 @@ export class AwsRssReaderStack extends Stack {
       timeout: Duration.seconds(60),
       memorySize: 1024
     });
+    processRssFeedFunction.addEventSource(new SqsEventSource(feedProcessingQueue, {
+      batchSize: 10
+    }));
 
     
     createCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
