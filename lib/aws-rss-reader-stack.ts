@@ -31,10 +31,11 @@ export class AwsRssReaderStack extends Stack {
       projectionType: dynamodb.ProjectionType.ALL
     });
 
-    const awsRssRegisterFunction = new NodejsFunction(this, 'AwsRssRegisterFunction', {
-      entry: 'handlers/AwsRssRegisterUrl.ts',
-      handler: 'main',
-      runtime: Runtime.NODEJS_20_X
+    table.addGlobalSecondaryIndex({
+      indexName: 'GSI2',
+      partitionKey: {name: 'GSI2PK', type: dynamodb.AttributeType.STRING},
+      sortKey: {name: 'GSI2SK', type: dynamodb.AttributeType.STRING},
+      projectionType: dynamodb.ProjectionType.ALL
     });
 
     //Category functions    
@@ -98,7 +99,20 @@ export class AwsRssReaderStack extends Stack {
       runtime: Runtime.NODEJS_20_X
     });
 
-    awsRssRegisterFunction.addEnvironment('TABLE_NAME', table.tableName);
+    const createFeedFunction = new NodejsFunction(this, 'createFeedFunction', {
+      entry: 'handlers/CreateFeed.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X
+    });
+
+    const getFeedFunction = new NodejsFunction(this, 'getFeedFunction', {
+      entry: 'handlers/GetFeed.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X
+    });
+
+
+    
     createCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
     getCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
     updateCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
@@ -111,14 +125,10 @@ export class AwsRssReaderStack extends Stack {
     deleteSubcategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
     getAllSubcategoriesFunction.addEnvironment('TABLE_NAME', table.tableName);
 
-    const awsRssAPI = new HttpApi(this,'AwsRssAPI');
-    awsRssAPI.addRoutes({
-      path: '/register',
-      methods: [HttpMethod.POST],
-      integration: new HttpLambdaIntegration('AwsRssRegisterUrlIntegration', awsRssRegisterFunction)
-    });
-    
+    createFeedFunction.addEnvironment('TABLE_NAME', table.tableName);
+    getFeedFunction.addEnvironment('TABLE_NAME', table.tableName);
 
+    const awsRssAPI = new HttpApi(this,'AwsRssAPI');
     awsRssAPI.addRoutes({
       path: '/getAllCategories',
       methods: [HttpMethod.GET],
@@ -179,10 +189,23 @@ export class AwsRssReaderStack extends Stack {
       integration: new HttpLambdaIntegration('DeleteSubcategoryIntegration', deleteSubcategoryFunction),
     });
 
+    awsRssAPI.addRoutes({
+      path: '/createFeed',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('CreateFeedIntegration', createCategoryFunction)
+    });
+
+    awsRssAPI.addRoutes({
+      path: '/getFeed/{id}/{subcategoryId}',
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration('GetFeedIntegration', getFeedFunction),
+    });
+
     table.grantReadData(getCategoryFunction);
     table.grantReadData(getAllCategoriesFunction);
     table.grantReadData(getSubcategoryFunction);
     table.grantReadData(getAllSubcategoriesFunction);
+    table.grantReadData(getFeedFunction);
 
     table.grantReadWriteData(createCategoryFunction);
     table.grantReadWriteData(updateCategoryFunction);
@@ -190,7 +213,8 @@ export class AwsRssReaderStack extends Stack {
     table.grantReadWriteData(createSubcategoryFunction);
     table.grantReadWriteData(updateSubcategoryFunction);
     table.grantReadWriteData(deleteSubcategoryFunction);
-
+    table.grantReadWriteData(createFeedFunction);
+    
     // example resource
     // const queue = new sqs.Queue(this, 'AwsRssReaderQueue', {
     //   visibilityTimeout: cdk.Duration.seconds(300)

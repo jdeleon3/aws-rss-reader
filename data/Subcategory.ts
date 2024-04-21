@@ -1,5 +1,3 @@
-
-import {BaseItem} from './BaseItem'
 import {getItem, queryItems, TransactWriteInfo, TransactType,AvailableConditionExpressions, transactWrite} from './Client';
 import {getValue} from './Utils';
 import { ulid } from 'ulid';
@@ -7,14 +5,14 @@ import {Category} from './Category';
 
 
 export class Subcategory extends Category{
-    ParentCategoryId: string
+    parentCategoryId: string
     constructor(title: string, description: string, parentCategoryId: string, id:string = ulid()){
         super(title, description, id)
-        this.ParentCategoryId = parentCategoryId
+        this.parentCategoryId = parentCategoryId
     }   
     override get PK(): string {
         console.log("overriding Subcategory PK generation...")
-        return Subcategory.formatIdToPK(this.ParentCategoryId);
+        return Subcategory.formatIdToPK(this.parentCategoryId);
     }
     override get SK(): string {        
         console.log("overriding Subcategory SK generation...")
@@ -46,7 +44,7 @@ export class Subcategory extends Category{
             title: this.title,
             description: this.description,
             id: this.id,
-            parentCategoryId: this.ParentCategoryId
+            parentCategoryId: this.parentCategoryId
         }
     }
 }
@@ -66,7 +64,7 @@ export const getSubcategory = async(parentId: string,id: string): Promise<Subcat
 export const updateSubcategory = async (category: Subcategory): Promise<Subcategory> => {
     try{
         let infos = [];
-        let current = await getSubcategory(category.ParentCategoryId,category.id);
+        let current = await getSubcategory(category.parentCategoryId,category.id);
         console.log(`Current: ${JSON.stringify(current)}`);
         if(current.title !== category.title){
             infos.push(new TransactWriteInfo(current.TitleKeys(), TransactType.DELETE, AvailableConditionExpressions.itemExistsCondition));

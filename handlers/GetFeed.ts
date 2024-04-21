@@ -1,0 +1,26 @@
+import {APIGatewayProxyResultV2, APIGatewayProxyEventV2, APIGatewayProxyHandlerV2} from 'aws-lambda'
+import {getFeed,Feed} from '../data/Feed'
+
+export const main: APIGatewayProxyHandlerV2 = async(event:APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> =>{
+    if(!event.pathParameters || !event.pathParameters.id || !event.pathParameters.subcategoryId){
+        return {
+            statusCode: 400,
+            body: 'Missing id parameter'
+        }
+    }
+    try{
+        const feed: Feed = await getFeed(event.pathParameters!.id, event.pathParameters!.subcategoryId)
+        return {
+            statusCode: 200,
+            body: JSON.stringify(feed)
+        }
+    }
+    catch(err){
+        console.log(err)
+        return {
+            statusCode: 500,
+            body: JSON.stringify(err)
+        }
+    }
+    
+}
