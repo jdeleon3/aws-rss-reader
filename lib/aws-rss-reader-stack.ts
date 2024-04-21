@@ -192,7 +192,7 @@ export class AwsRssReaderStack extends Stack {
     awsRssAPI.addRoutes({
       path: '/createFeed',
       methods: [HttpMethod.POST],
-      integration: new HttpLambdaIntegration('CreateFeedIntegration', createCategoryFunction)
+      integration: new HttpLambdaIntegration('CreateFeedIntegration', createFeedFunction)
     });
 
     awsRssAPI.addRoutes({
@@ -214,7 +214,7 @@ export class AwsRssReaderStack extends Stack {
     table.grantReadWriteData(updateSubcategoryFunction);
     table.grantReadWriteData(deleteSubcategoryFunction);
     table.grantReadWriteData(createFeedFunction);
-    
+
     // example resource
     // const queue = new sqs.Queue(this, 'AwsRssReaderQueue', {
     //   visibilityTimeout: cdk.Duration.seconds(300)
