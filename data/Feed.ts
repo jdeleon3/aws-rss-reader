@@ -1,6 +1,7 @@
 import {BaseItem} from './BaseItem'
 import {getItem, queryItems, TransactWriteInfo, TransactType,AvailableConditionExpressions, transactWrite} from './Client';
 import { ulid } from 'ulid';
+import {siteReader} from './SiteReader';
 
 export class Feed extends BaseItem {
     id: string
@@ -88,6 +89,9 @@ export class Feed extends BaseItem {
 }
 
 export const createFeed = async (feed: Feed): Promise<Feed> => {
+    if(!feed.rssUrl){
+        feed.rssUrl = await siteReader.getRssLink(feed.siteUrl)
+    }
     let infos = []
     infos.push(new TransactWriteInfo(feed.getUrlKeys(), TransactType.PUT,AvailableConditionExpressions.itemDoesNotExistCondition));
     infos.push(new TransactWriteInfo(feed.toItem(), TransactType.PUT,AvailableConditionExpressions.itemDoesNotExistCondition));
@@ -101,6 +105,35 @@ export const getFeed = async (id: string, subcategoryId: string): Promise<Feed> 
         let response = await getItem(process.env.TABLE_NAME!, `SCF#${subcategoryId}`,`FEED#${id}`);
         console.log(`Response: ${JSON.stringify(response)}`);
         return Feed.FromItem(response.Item);
+    }
+    catch(err){
+        console.log(err)
+        throw err;
+    }
+}
+
+export const deleteFeed = async (feed:Feed): Promise<Feed> => {
+    try{
+        //TODO: Check for FeedItems before delete
+        let infos = []
+        infos.push(new TransactWriteInfo(feed.getUrlKeys(), TransactType.DELETE, AvailableConditionExpressions.itemExistsCondition));
+        infos.push(new TransactWriteInfo(feed.Keys(), TransactType.DELETE, AvailableConditionExpressions.itemExistsCondition));
+        let response = await transactWrite(process.env.TABLE_NAME!, infos);
+        console.log(`Response: ${JSON.stringify(response)}`);
+        return response.$metadata.httpStatusCode?.toString();
+    }
+    catch(err){
+        console.log(err)
+        throw err;
+    }
+}
+
+export const getAllFeeds = async (subcategoryId: string): Promise<Feed[]> => {
+    try{
+        console.log(`Getting all subcategories with parent id: ${subcategoryId}`);
+        let response = await queryItems(process.env.TABLE_NAME!,undefined,"PK = :val",{':val': `SCF#${subcategoryId}`})
+        console.log(`Response: ${JSON.stringify(response)}`);
+        return response.Items?.map(Feed.FromItem) || [];
     }
     catch(err){
         console.log(err)

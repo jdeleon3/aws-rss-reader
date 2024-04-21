@@ -111,6 +111,18 @@ export class AwsRssReaderStack extends Stack {
       runtime: Runtime.NODEJS_20_X
     });
 
+    const getAllFeedsFunction = new NodejsFunction(this, 'getAllFeedsFunction', {
+      entry: 'handlers/GetAllFeeds.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X
+    });
+
+    const deleteFeedFunction = new NodejsFunction(this, 'deleteFeedFunction', {
+      entry: 'handlers/DeleteFeed.ts',
+      handler: 'main',
+      runtime: Runtime.NODEJS_20_X
+    });
+
 
     
     createCategoryFunction.addEnvironment('TABLE_NAME', table.tableName);
@@ -127,6 +139,8 @@ export class AwsRssReaderStack extends Stack {
 
     createFeedFunction.addEnvironment('TABLE_NAME', table.tableName);
     getFeedFunction.addEnvironment('TABLE_NAME', table.tableName);
+    deleteFeedFunction.addEnvironment('TABLE_NAME', table.tableName);
+    getAllFeedsFunction.addEnvironment('TABLE_NAME', table.tableName);
 
     const awsRssAPI = new HttpApi(this,'AwsRssAPI');
     awsRssAPI.addRoutes({
@@ -200,12 +214,24 @@ export class AwsRssReaderStack extends Stack {
       methods: [HttpMethod.GET],
       integration: new HttpLambdaIntegration('GetFeedIntegration', getFeedFunction),
     });
+    awsRssAPI.addRoutes({
+      path: '/deleteFeed',
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration('DeleteFeedIntegration', deleteFeedFunction),
+    });
+
+    awsRssAPI.addRoutes({
+      path: '/getAllFeeds',
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration('GetAllFeedsIntegration', getAllFeedsFunction),
+    });
 
     table.grantReadData(getCategoryFunction);
     table.grantReadData(getAllCategoriesFunction);
     table.grantReadData(getSubcategoryFunction);
     table.grantReadData(getAllSubcategoriesFunction);
     table.grantReadData(getFeedFunction);
+    table.grantReadData(getAllFeedsFunction);
 
     table.grantReadWriteData(createCategoryFunction);
     table.grantReadWriteData(updateCategoryFunction);
@@ -214,6 +240,7 @@ export class AwsRssReaderStack extends Stack {
     table.grantReadWriteData(updateSubcategoryFunction);
     table.grantReadWriteData(deleteSubcategoryFunction);
     table.grantReadWriteData(createFeedFunction);
+    table.grantReadWriteData(deleteFeedFunction);
 
     // example resource
     // const queue = new sqs.Queue(this, 'AwsRssReaderQueue', {

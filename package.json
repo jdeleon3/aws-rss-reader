@@ -27,6 +27,8 @@
     "@types/aws-lambda": "^8.10.137",
     "aws-cdk-lib": "2.137.0",
     "aws-sdk": "^2.1601.0",
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21",
     "typescript": "~5.4.3",
