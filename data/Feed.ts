@@ -31,8 +31,8 @@ export class Feed extends BaseItem {
 
     public getGSI2Keys(){
         return {
-            GSI1PK: this.siteUrl,
-            GSI1SK: this.PK
+            GSI2PK: this.siteUrl,
+            GSI2SK: this.PK
         }
     }
     public static getSiteType(siteUrl:string){
@@ -65,7 +65,7 @@ export class Feed extends BaseItem {
     }
     toItem(): Record<string, unknown> {
         return {
-            ...this.Keys,
+            ...this.Keys(),
             ...this.getGSI1Keys(),
             ...this.getGSI2Keys(),
             id: this.id,
