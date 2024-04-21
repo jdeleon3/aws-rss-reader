@@ -24,6 +24,7 @@ export class SqsManager{
         console.log("No queue url");
         return;
     }       
+    console.log(`Processing queue: ${queueUrl}`);
     const result = await receiveMessage(queueUrl);
     if(!result || !result.Messages || result.Messages.length === 0){
         console.log("No messages");
