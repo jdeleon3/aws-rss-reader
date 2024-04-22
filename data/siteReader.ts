@@ -51,7 +51,7 @@ export class siteReader{
         let c = cheerio.load(data,{xmlMode: true})
         let items = c('entry');
         if(!items){
-            items = c('channel item');        
+            items = c('channel').find('item');        
         }
         if(!items || items.length === 0){
             return []

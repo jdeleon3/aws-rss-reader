@@ -20,8 +20,24 @@ export async function putItem(tableName:string, item:Record<string,unknown>|unde
     return response;
     }
 
-export async function batchWriteItems(tableName:string, items:Record<string, unknown>[]|undefined): Promise<any> {
+export async function batchWriteItems(tableName:string, items:Record<string, unknown>[]|undefined): Promise<void> {
     getClient();
+    if(!items || items.length === 0){
+        return;
+    }
+    let recordCount = items.length;
+    let chunkSize = 25;
+    if(recordCount && recordCount > chunkSize){
+        const chunks:Record<string, unknown>[][] = [];
+        for (let i = 0; i < recordCount; i += chunkSize) {
+            await submitBatch(tableName, items.slice(i, i + chunkSize));
+        }
+    }
+    else{
+        await submitBatch(tableName, items);
+    }
+}
+async function submitBatch(tableName:string, items:Record<string, unknown>[]|undefined){
     const input:BatchWriteCommandInput = {
         RequestItems:{
             [tableName]: []
@@ -38,12 +54,10 @@ export async function batchWriteItems(tableName:string, items:Record<string, unk
         })
     });
     const command = new BatchWriteCommand(input);
-    
     const docClient = DynamoDBDocumentClient.from(client)
     
     const response = await docClient.send(command);
     console.log(response);
-    return response;
 }
 
     //Update by replacing entire object
