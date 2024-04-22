@@ -262,6 +262,7 @@ export class AwsRssReaderStack extends Stack {
     table.grantReadWriteData(deleteSubcategoryFunction);
     table.grantReadWriteData(createFeedFunction);
     table.grantReadWriteData(deleteFeedFunction);
+    table.grantReadWriteData(processRssFeedFunction);
 
     feedProcessingQueue.grantConsumeMessages(processRssFeedFunction);
     feedProcessingQueue.grantSendMessages(createFeedFunction);
