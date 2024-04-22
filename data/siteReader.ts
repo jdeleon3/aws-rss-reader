@@ -50,11 +50,11 @@ export class siteReader{
         console.log(JSON.stringify(data));
         let c = cheerio.load(data,{xmlMode: true})
         let items = c('entry');
-        if(!items){
-            items = c('channel').find('item');        
+        if(!items || items.length === 0){
+            items = c('item');
         }
         if(!items || items.length === 0){
-            return []
+            return [];
         }
         let feedItems:FeedItem[] = [];
         items.each((i, item) => {
