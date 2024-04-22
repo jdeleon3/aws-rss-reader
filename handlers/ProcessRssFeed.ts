@@ -7,9 +7,10 @@ export const main:SQSHandler = async(event:SQSEvent, context:Context):Promise<SQ
     const failures:SQSBatchItemFailure[] = [];
     for(let record of event.Records){
         try{
+            console.log(`Processing record: ${record}`);
             let feed = JSON.parse(record.body);
-            const sqsResponse = await processFeedRequest(feed);
-            console.log(sqsResponse);
+            const response = await processFeedRequest(feed);
+            console.log(`Processing response: ${response}`);
         }catch(err){
             failures.push({itemIdentifier:record.messageId});
         }

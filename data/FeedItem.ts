@@ -53,11 +53,14 @@ constructor(feedId: string, title: string, link: string, description:string, con
 
 export const processFeedRequest = async(feed:Feed):Promise<void> =>{
     if(!feed){
+        console.log('No feed');
         return
     }
     
     let feedItems = await siteReader.processSiteFeed(feed.rssUrl, feed.id);
+    console.log(`Feed Items found: ${feedItems}`);
     if(!feedItems || feedItems.length === 0){
+        console.log('No feedItems');
         return
     }    
     feedItems.forEach( async f => {
