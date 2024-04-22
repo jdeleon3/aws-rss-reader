@@ -1,5 +1,5 @@
 import axios from 'axios'
-import * as cheerio from 'cheerio'
+import {load} from 'cheerio'
 import { FeedItem } from './FeedItem';
 
 
@@ -11,7 +11,7 @@ export class siteReader{
             return `${url}.rss`;
         }        
         const {data} = await axios.get(url)
-        let c = cheerio.load(data)
+        let c = load(data)
         let rssLink = c('link[type="application/rss+xml"]').attr('href');
         console.log(`Rss Link: ${rssLink}`);
         if(!rssLink){
@@ -43,28 +43,32 @@ export class siteReader{
         if(!rssUrl){
             return []
         }
+        const urlType = this.getSiteType(rssUrl);
         const {data} = await axios.get(rssUrl);
-        let c = cheerio.load(data)
+        let c = load(data,{xmlMode: true})
         let items = c('entry');
         if(!items){
             items = c('item');        
         }
-        console.log(items);
+        console.log(JSON.stringify(items));
         if(!items || items.length === 0){
             return []
         }
         let feedItems:FeedItem[] = [];
         items.each((i, item) => {
             let title = c(item).find('title').text();
-            let link = c(item).find('link').text();
+            let link = c(item).find('link').attr('href');
             let description = c(item).find('description').text();
+            if(urlType == 'youtube'){
+                description = c(item).find('media\\:description').text();
+            }
             let content = c(item).find('content').text();
             let author = c(item).find('author').text();
             let published = c(item).find('published').text();
             if(!published){
                 published = c(item).find('pubDate').text();
             }
-            feedItems.push(new FeedItem(feedId,title, link,description, content,author,published));
+            feedItems.push(new FeedItem(feedId,title, link!,description, content,author,published));
         })
         console.log(feedItems);
         return feedItems;
