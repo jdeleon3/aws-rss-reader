@@ -47,7 +47,7 @@ export class siteReader{
             console.log(`Processing site feed ${rssUrl}`);
         const urlType = this.getSiteType(rssUrl);
         const {data} = await axios.get(rssUrl);
-        console.log(JSON.stringify(data));
+        console.log(data);
         let c = cheerio.load(data,{xmlMode: true})
         let items = c('entry');
         if(!items){
