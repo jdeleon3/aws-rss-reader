@@ -1,5 +1,6 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutCommand, DynamoDBDocumentClient,QueryCommand, GetCommand, GetCommandOutput, DeleteCommand,TransactWriteCommand, TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, DynamoDBDocumentClient,QueryCommand, GetCommand, GetCommandOutput, DeleteCommand,BatchWriteCommand,BatchWriteCommandInput,TransactWriteCommand, TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
+import { Table } from "aws-cdk-lib/aws-dynamodb";
 
 let client: DynamoDBClient// = null
 
@@ -18,6 +19,32 @@ export async function putItem(tableName:string, item:Record<string,unknown>|unde
     console.log(response);
     return response;
     }
+
+export async function batchWriteItems(tableName:string, items:Record<string, unknown>[]|undefined): Promise<any> {
+    getClient();
+    const input:BatchWriteCommandInput = {
+        RequestItems:{
+            [tableName]: []
+        }
+    };
+    items?.forEach(item => {
+        if(!input.RequestItems){
+            throw new Error(`Invalid input - tableName: ${tableName}`);
+        }
+        input.RequestItems[tableName]?.push({
+            PutRequest: {
+                Item: item
+            }
+        })
+    });
+    const command = new BatchWriteCommand(input);
+    
+    const docClient = DynamoDBDocumentClient.from(client)
+    
+    const response = await docClient.send(command);
+    console.log(response);
+    return response;
+}
 
     //Update by replacing entire object
     export async function updateItem(tableName:string, item:Record<string,unknown>|undefined): Promise<any> {

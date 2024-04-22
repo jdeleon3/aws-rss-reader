@@ -1,5 +1,5 @@
 import {BaseItem} from './BaseItem'
-import {getItem, queryItems, TransactWriteInfo, TransactType,AvailableConditionExpressions, putItem} from './Client';
+import {getItem, queryItems, TransactWriteInfo, TransactType,AvailableConditionExpressions, putItem, batchWriteItems} from './Client';
 import { ulid } from 'ulid';
 import {Message} from '@aws-sdk/client-sqs'
 import {Feed} from './Feed'
@@ -63,7 +63,14 @@ export const processFeedRequest = async(feed:Feed):Promise<void> =>{
         console.log('No feedItems');
         return
     }    
-    feedItems.forEach( async (f:FeedItem) => {
+    let writeItems:Record<string,unknown>[] = []
+    feedItems.forEach( (f:FeedItem) => {
+        writeItems.push(f.toItem());
+    });
+    let response = await batchWriteItems(process.env.TABLE_NAME!, writeItems);
+    console.log(response);
+    return response;
+    /*feedItems.forEach( async (f:FeedItem) => {
         try{
             console.log(`Putting item: ${f.id}`);
             let response = await putItem(process.env.TABLE_NAME!, f.toItem());        
@@ -72,6 +79,6 @@ export const processFeedRequest = async(feed:Feed):Promise<void> =>{
         catch(e){
             console.log(e);
         }        
-    });
+    });*/
         
 }
