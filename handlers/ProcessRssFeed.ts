@@ -1,5 +1,6 @@
 import {SQSEvent,SQSBatchItemFailure,SQSHandler, Context, SQSBatchResponse} from 'aws-lambda';
 import { processFeedRequest } from "../data/FeedItem";
+import { Feed } from '../data/Feed';
 
 
 export const main:SQSHandler = async(event:SQSEvent, context:Context):Promise<SQSBatchResponse> =>{
@@ -8,7 +9,8 @@ export const main:SQSHandler = async(event:SQSEvent, context:Context):Promise<SQ
     for(let record of event.Records){
         try{
             console.log(`Processing record: ${JSON.stringify(record)}`);
-            let feed = JSON.parse(record.body);
+            let feed:Feed = JSON.parse(record.body);
+            console.log(`Processing feed: ${JSON.stringify(feed)}`);
             const response = await processFeedRequest(feed);
             console.log(`Processing response: ${response}`);
         }catch(err){
