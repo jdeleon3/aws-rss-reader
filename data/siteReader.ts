@@ -60,6 +60,9 @@ export class siteReader{
         items.each((i, item) => {
             let title = c(item).find('title').text();
             let link = c(item).find('link').attr('href');
+            if(!link){
+                link = c(item).find('link').text();
+            }
             let description = c(item).find('description').text();
             if(urlType == 'youtube'){
                 description = c(item).find('media\\:description').text();
