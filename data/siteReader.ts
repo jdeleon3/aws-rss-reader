@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {load} from 'cheerio'
+import * as cheerio from 'cheerio'
 import { FeedItem } from './FeedItem';
 
 
@@ -11,7 +11,7 @@ export class siteReader{
             return `${url}.rss`;
         }        
         const {data} = await axios.get(url)
-        let c = load(data)
+        let c = cheerio.load(data)
         let rssLink = c('link[type="application/rss+xml"]').attr('href');
         console.log(`Rss Link: ${rssLink}`);
         if(!rssLink){
@@ -43,9 +43,12 @@ export class siteReader{
         if(!rssUrl){
             return []
         }
+        try{
+            console.log(`Processing site feed ${rssUrl}`);
         const urlType = this.getSiteType(rssUrl);
         const {data} = await axios.get(rssUrl);
-        let c = load(data,{xmlMode: true})
+        console.log(JSON.stringify(data));
+        let c = cheerio.load(data,{xmlMode: true})
         let items = c('entry');
         if(!items){
             items = c('item');        
@@ -72,6 +75,13 @@ export class siteReader{
         })
         console.log(feedItems);
         return feedItems;
+
+        }
+        catch(err){
+            console.log(err);
+            return []
+        }
+        
 
 
     }
