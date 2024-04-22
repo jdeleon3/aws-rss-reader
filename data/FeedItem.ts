@@ -58,14 +58,16 @@ export const processFeedRequest = async(feed:Feed):Promise<void> =>{
     }
     
     let feedItems = await siteReader.processSiteFeed(feed.rssUrl, feed.id);
-    console.log(`Feed Items found: ${feedItems}`);
+    console.log(`Feed Items found: ${JSON.stringify(feedItems)}`);
     if(!feedItems || feedItems.length === 0){
         console.log('No feedItems');
         return
     }    
-    feedItems.forEach( async f => {
+    feedItems.forEach( async (f:FeedItem) => {
         try{
-            await putItem(process.env.TABLE_NAME!, f.toItem());        
+            console.log(`Putting item: ${f.id}`);
+            let response = await putItem(process.env.TABLE_NAME!, f.toItem());        
+            console.log(response);
         }
         catch(e){
             console.log(e);

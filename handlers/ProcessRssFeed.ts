@@ -11,9 +11,9 @@ export const main:SQSHandler = async(event:SQSEvent, context:Context):Promise<SQ
             console.log(`Processing record: ${JSON.stringify(record)}`);
             let feed:Feed = JSON.parse(record.body);
             console.log(`Processing feed: ${JSON.stringify(feed)}`);
-            const response = await processFeedRequest(feed);
-            console.log(`Processing response: ${response}`);
+            await processFeedRequest(feed);
         }catch(err){
+            console.error(err);
             failures.push({itemIdentifier:record.messageId});
         }
     }
