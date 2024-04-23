@@ -1,4 +1,4 @@
-import {HttpApi, HttpMethod, CorsHttpMethod, HttpRoute} from 'aws-cdk-lib/aws-apigatewayv2';
+import {HttpApi, HttpMethod, CorsHttpMethod, HttpRoute, HttpApiProps, DomainName} from 'aws-cdk-lib/aws-apigatewayv2';
 import  {HttpLambdaIntegration} from 'aws-cdk-lib/aws-apigatewayv2-integrations'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import {Runtime} from 'aws-cdk-lib/aws-lambda';
@@ -7,6 +7,7 @@ import {Duration, Stack, StackProps} from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import {Queue} from 'aws-cdk-lib/aws-sqs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
+import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 
 export class AwsRssReaderStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -161,7 +162,27 @@ export class AwsRssReaderStack extends Stack {
     processRssFeedFunction.addEnvironment('FEED_PROCESSING_QUEUE', feedProcessingQueue.queueUrl);
     createFeedFunction.addEnvironment('FEED_PROCESSING_QUEUE', feedProcessingQueue.queueUrl);
 
-    const awsRssAPI = new HttpApi(this,'AwsRssAPI');
+    //set cors, domain name and certificate information
+    const domainName:DomainName = new DomainName(this, 'gimmefeed', {
+      domainName: 'gimmefeed.com',
+      certificate: new Certificate(this, 'gimmefeed-com-certificate', {
+        domainName: 'gimmefeed.com',
+        validation: CertificateValidation.fromDns()
+      })
+    }); 
+    
+    const awsRssAPI = new HttpApi(this,'AwsRssAPI',{
+      corsPreflight: {
+        allowOrigins: ['*'],
+        allowMethods: [CorsHttpMethod.GET, CorsHttpMethod.POST],
+        allowHeaders: ['*'],
+        maxAge: Duration.days(10)
+      },
+      defaultDomainMapping: {
+        domainName: domainName,
+        mappingKey: 'rssReaderApi'
+      }
+    });
     awsRssAPI.addRoutes({
       path: '/getAllCategories',
       methods: [HttpMethod.GET],
