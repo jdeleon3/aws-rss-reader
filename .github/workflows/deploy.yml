@@ -7,7 +7,6 @@ on:
 env:
   AWS_DEFAULT_REGION: us-east-1
   AWS_DEFAULT_OUTPUT: json
-  CERT_ARN: ${{secrets.CERT_ARN}}
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
@@ -44,6 +43,8 @@ jobs:
         with:
           cdk_subcommand: 'diff'
           actions_comment: true
+        env:
+          CERT_ARN: ${{secrets.CERT_ARN}}
         #env:
         #  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         #  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
