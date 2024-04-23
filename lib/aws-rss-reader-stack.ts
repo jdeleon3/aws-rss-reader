@@ -164,7 +164,7 @@ export class AwsRssReaderStack extends Stack {
     
 
     //set cors, domain name and certificate information
-    const certArn:string|undefined = process.env.CERT_ARN;
+    const certArn:string|undefined = process.env.AWS_CERT_ARN;
     if(!certArn){
       throw new Error('Cert Arn not found');
     }
