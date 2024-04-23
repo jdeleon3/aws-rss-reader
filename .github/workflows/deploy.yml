@@ -7,6 +7,7 @@ on:
 env:
   AWS_DEFAULT_REGION: us-east-1
   AWS_DEFAULT_OUTPUT: json
+  CERT_ARN: ${{secrets.CERT_ARN}}
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
