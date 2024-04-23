@@ -161,14 +161,16 @@ export class AwsRssReaderStack extends Stack {
 
     processRssFeedFunction.addEnvironment('FEED_PROCESSING_QUEUE', feedProcessingQueue.queueUrl);
     createFeedFunction.addEnvironment('FEED_PROCESSING_QUEUE', feedProcessingQueue.queueUrl);
+    
 
     //set cors, domain name and certificate information
+    const certArn:string|undefined = process.env.CERT_ARN;
+    if(!certArn){
+      throw new Error('Cert Arn not found');
+    }
     const domainName:DomainName = new DomainName(this, 'gimmefeed', {
-      domainName: 'gimmefeed.com',
-      certificate: new Certificate(this, 'gimmefeed-com-certificate', {
-        domainName: 'gimmefeed.com',
-        validation: CertificateValidation.fromDns()
-      })
+      domainName: 'api.gimmefeed.com',
+      certificate: Certificate.fromCertificateArn(this,'gimmefeed-api',certArn)
     }); 
     
     const awsRssAPI = new HttpApi(this,'AwsRssAPI',{
